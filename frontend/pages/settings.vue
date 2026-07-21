@@ -35,13 +35,7 @@
             >
               📷 Changer
             </label>
-            <input 
-              id="avatar-file-input" 
-              type="file" 
-              accept="image/*" 
-              @change="handleLocalAvatarUpload" 
-              style="display: none;" 
-            />
+            <input id="avatar-file-input" type="file" accept="image/*" class="hidden-input" @change="handleLocalAvatarUpload" />
           </div>
 
           <div style="flex: 1; min-width: 250px;">
@@ -239,5 +233,9 @@ const updateProfile = async () => {
 
 .avatar-overlay-label:hover {
   opacity: 1;
+}
+
+.hidden-input {
+  display: none;
 }
 </style>
