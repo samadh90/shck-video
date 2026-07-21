@@ -23,10 +23,10 @@
         <div style="display: flex; align-items: center; gap: 25px; flex-wrap: wrap;">
           <div style="position: relative; group">
             <img 
-              :src="form.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${form.username}`" 
+              :src="avatarUrl" 
               loading="lazy"
               decoding="async"
-              style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--neon-purple); object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
+              class="profile-avatar-preview" 
             />
             
             <label 
@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 
@@ -123,6 +123,12 @@ const form = ref({
   bio: '',
   avatar: '',
   birthdate: ''
+})
+
+const avatarUrl = computed(() => {
+  if (form.value.avatar) return form.value.avatar
+  const seed = form.value.username ? encodeURIComponent(form.value.username) : 'default'
+  return 'https://api.dicebear.com/7.x/bottts/svg?seed=' + seed
 })
 
 const fetchProfile = async () => {
@@ -206,6 +212,15 @@ const updateProfile = async () => {
 </script>
 
 <style scoped>
+.profile-avatar-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--neon-purple);
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .avatar-overlay-label {
   position: absolute;
   inset: 0;
