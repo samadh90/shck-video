@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  password          String
+  username          String
+  avatar            String?
+  bio               String?
+  isVerified        Boolean        @default(false)
+  verificationToken String?
+  birthdate         String?
+  videos            Video[]
+  comments          Comment[]
+  likes             Like[]
+  ratingsGiven      Rating[]       @relation("ratingGiver")
+  ratingsRecv       Rating[]       @relation("ratingTarget")
+  notifications     Notification[]
+  followers         Follow[]       @relation("followingRelation")
+  following         Follow[]       @relation("followerRelation")
+  createdAt         DateTime       @default(now())
+}
+
+model Video {
+  id          Int       @id @default(autoincrement())
+  customId    String?   @unique
+  title       String
+  description String?
+  filename    String
+  thumbnail   String?
+  category    String?   @default("Divertissement")
+  visibility  String    @default("PUBLIC")
+  is18Plus    Boolean   @default(false)
+  views       Int       @default(0)
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  likes       Like[]
+  createdAt   DateTime  @default(now())
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  videoId   Int
+  userId    Int
+  parentId  Int?
+  isEdited  Boolean   @default(false)
+  video     Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  videoId   Int
+  userId    Int
+  isLike    Boolean
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([videoId, userId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  follower    User     @relation("followerRelation", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followingRelation", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Rating {
+  id           Int      @id @default(autoincrement())
+  stars        Int
+  targetUserId Int
+  userId       Int
+  targetUser   User     @relation("ratingTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  user         User     @relation("ratingGiver", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([targetUserId, userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

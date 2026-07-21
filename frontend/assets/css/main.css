@@ -1,0 +1,463 @@
+:root {
+  --neon-purple: #8A2BE2;
+  --neon-pink: #FF1493;
+  --bg-dark: #ffffff;
+  --bg-card: #f8f9fa;
+  --text-main: #222222;
+  --text-muted: #666666;
+  --border-color: #e2e8f0;
+}
+
+/* ========================================================
+   BASE STYLES
+   ======================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+  background-color: var(--bg-dark);
+  color: #222222;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lazy-loaded image base — avoids layout shift */
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========================================================
+   FORM CONTROLS — HIGH LEGIBILITY
+   ======================================================== */
+input, textarea, select {
+  font-family: inherit;
+  font-size: 15px;
+  color: #1a1a1a;
+  color: var(--text-main);
+  background-color: #ffffff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px 14px;
+  outline: none;
+  box-sizing: border-box;
+  /* GPU-composite only — no layout trigger */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #888888;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #8A2BE2;
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.15);
+}
+
+/* ========================================================
+   SCROLLBAR (WebKit)
+   ======================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #ffffff;
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #8A2BE2;
+  background: var(--neon-purple);
+  border-radius: 4px;
+}
+
+/* ========================================================
+   NEON BUTTONS — GPU-ACCELERATED, ZERO-REFLOW
+   
+   Uses ONLY opacity/transform (compositor-only properties)
+   so hover animations never trigger layout recalculation.
+   ======================================================== */
+.neon-btn {
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #8A2BE2;
+  color: var(--neon-purple);
+  border: 2px solid #8A2BE2;
+  border: 2px solid var(--neon-purple);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 0 4px rgba(138, 43, 226, 0.2);
+  /* GPU Layer promotion — no reflow on hover */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: background-color, box-shadow, color;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.neon-btn:hover {
+  background-color: #8A2BE2;
+  background-color: var(--neon-purple);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+}
+
+.neon-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.neon-btn-pink {
+  color: #FF1493;
+  color: var(--neon-pink);
+  border-color: #FF1493;
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 4px rgba(255, 20, 147, 0.2);
+}
+
+.neon-btn-pink:hover {
+  background-color: #FF1493;
+  background-color: var(--neon-pink);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
+}
+
+/* ========================================================
+   NAVBAR — Position sticky, GPU layer
+   ======================================================== */
+.navbar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-align-items: center;
+  align-items: center;
+  padding: 14px 30px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
+  /* Promote navbar to its own GPU compositor layer */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.navbar .logo {
+  font-size: 24px;
+  font-weight: 900;
+  color: #1a1a1a;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.navbar .links a {
+  color: #222222;
+  color: var(--text-main);
+  text-decoration: none;
+  margin-left: 15px;
+}
+
+/* ========================================================
+   VIDEO GRID & CARDS — GPU Composited Hover
+   
+   translateY moves on compositor thread,
+   no layout/paint triggered on hover.
+   ======================================================== */
+.video-grid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  /* Flexbox gap fallback for browsers without gap support */
+  margin: -12px;
+  padding: 18px;
+}
+
+/* Modern browsers get grid layout */
+@supports (display: grid) {
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 30px;
+  }
+}
+
+.video-card {
+  /* Fallback flex-basis for older browsers */
+  width: calc(33.333% - 24px);
+  margin: 12px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  /* GPU promotion — hover uses transform (no reflow) */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
+  transition: -webkit-transform 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Modern grid children don't need their own width */
+@supports (display: grid) {
+  .video-card {
+    width: auto;
+    margin: 0;
+  }
+}
+
+.video-card:hover {
+  -webkit-transform: translateY(-4px) translateZ(0);
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: 0 8px 24px rgba(138, 43, 226, 0.12);
+}
+
+.video-card .thumbnail {
+  width: 100%;
+  height: 170px;
+  background: #1e1e24;
+  /* Gradient fallback for older engines */
+  background: -webkit-linear-gradient(135deg, #1e1e24 0%, #2a2a36 100%);
+  background: linear-gradient(135deg, #1e1e24 0%, #2a2a36 100%);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Play icon overlay — only show when there's NO real thumbnail img */
+.video-card .thumbnail:not(:has(img)):after {
+  content: "▶";
+  font-size: 36px;
+  color: #ffffff;
+  opacity: 0.8;
+  -webkit-transition: opacity 0.18s ease, -webkit-transform 0.18s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.video-card:hover .thumbnail:not(:has(img)):after {
+  opacity: 1;
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.video-info {
+  padding: 14px;
+}
+
+.video-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.video-info p {
+  margin: 0;
+  color: #666666;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ========================================================
+   CATEGORY BADGE
+   ======================================================== */
+.category-badge {
+  background: rgba(138, 43, 226, 0.1);
+  color: #8A2BE2;
+  color: var(--neon-purple);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* ========================================================
+   DESCRIPTION BOX
+   ======================================================== */
+.description-box {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* ========================================================
+   BACKDROP-FILTER FALLBACK
+   
+   Use solid semi-transparent background as fallback
+   for engines that don't support backdrop-filter (Firefox < 103,
+   older Safari). Progressive enhancement via @supports.
+   ======================================================== */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+@supports ((-webkit-backdrop-filter: blur(8px)) or (backdrop-filter: blur(8px))) {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ========================================================
+   DROPDOWN PANELS — GPU Layer
+   ======================================================== */
+.dropdown-panel {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: opacity, transform;
+}
+
+/* ========================================================
+   SUBSCRIPTION ITEMS — Smooth transitions
+   ======================================================== */
+.sub-item {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 10px;
+  /* gap fallback via margin */
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: background-color;
+  transition: background-color 0.15s ease;
+}
+
+.sub-item > * + * {
+  /* Flexbox gap fallback */
+  margin-left: 10px;
+}
+
+@supports (gap: 1px) {
+  .sub-item > * + * {
+    margin-left: 0;
+  }
+}
+
+/* ========================================================
+   RESPONSIVE LAYOUT UTILITIES
+   ======================================================== */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    -ms-flex-wrap: wrap;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .video-card {
+    width: calc(50% - 24px);
+  }
+
+  @supports (display: grid) {
+    .video-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    .video-card {
+      width: auto;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .video-card {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  @supports (display: grid) {
+    .video-grid {
+      grid-template-columns: 1fr;
+    }
+    .video-card {
+      width: auto;
+      margin: 0;
+    }
+  }
+}
+
+/* ========================================================
+   MODULE SHCK VIDEO +18 — CRIMSON RED & DARK SLATE THEME
+   ======================================================== */
+.neon-btn-crimson {
+  color: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.3);
+}
+
+.neon-btn-crimson:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+}
+
+.theme-18plus-container {
+  min-height: 100vh;
+  background-color: #121212 !important;
+  color: #f8fafc !important;
+}
+
+.theme-18plus-container .video-card {
+  background-color: #1e1e1e !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+.theme-18plus-container .video-info h3 {
+  color: #ffffff !important;
+}
+
+.theme-18plus-container .video-info p {
+  color: #a1a1aa !important;
+}
+
