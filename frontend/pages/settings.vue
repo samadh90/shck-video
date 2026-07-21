@@ -1,27 +1,25 @@
 <template>
-  <div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+  <div class="settings-wrapper">
+    <div class="settings-header">
       <div>
-        <h1 style="margin: 0; font-size: 26px; color: #111;">Modifier le Profil</h1>
-        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px;">Mettez à jour vos informations personnelles et votre avatar.</p>
+        <h1 class="settings-title">Modifier le Profil</h1>
+        <p class="settings-subtitle">Mettez à jour vos informations personnelles et votre avatar.</p>
       </div>
-      <NuxtLink to="/channel" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">&larr; Retour à mon profil</NuxtLink>
+      <NuxtLink to="/channel" class="back-link">&larr; Retour à mon profil</NuxtLink>
     </div>
 
-    <div v-if="loading" style="text-align: center; color: var(--neon-purple); padding: 40px;">
+    <div v-if="loading" class="loading-state">
       Chargement de vos paramètres...
     </div>
 
-    <div v-else style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+    <div v-else class="settings-card">
       
       <!-- AVATAR SELECTION MODULE & PREVIEW BEFORE CONFIRMATION -->
-      <div style="margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #e2e8f0;">
-        <label style="display: block; font-weight: 600; margin-bottom: 15px; font-size: 15px; color: #111;">
-          Photo de profil (Avatar)
-        </label>
+      <div class="avatar-section">
+        <label class="form-label">Photo de profil (Avatar)</label>
         
-        <div style="display: flex; align-items: center; gap: 25px; flex-wrap: wrap;">
-          <div style="position: relative; group">
+        <div class="avatar-row">
+          <div class="avatar-preview-box">
             <img 
               :src="avatarUrl" 
               loading="lazy"
@@ -38,18 +36,18 @@
             <input id="avatar-file-input" type="file" accept="image/*" class="hidden-input" @change="handleLocalAvatarUpload" />
           </div>
 
-          <div style="flex: 1; min-width: 250px;">
-            <div style="margin-bottom: 12px;">
-              <span style="font-size: 13px; font-weight: 600; color: #333; display: block; margin-bottom: 4px;">Option 1: Importer depuis votre ordinateur</span>
-              <input type="file" accept="image/*" @change="handleLocalAvatarUpload" style="font-size: 12px;" />
+          <div class="avatar-controls">
+            <div class="avatar-option">
+              <span class="option-title">Option 1: Importer depuis votre ordinateur</span>
+              <input type="file" accept="image/*" @change="handleLocalAvatarUpload" class="file-input-sm" />
             </div>
 
-            <div>
-              <span style="font-size: 13px; font-weight: 600; color: #333; display: block; margin-bottom: 4px;">Option 2: URL de l'image</span>
-              <input type="text" v-model="form.avatar" placeholder="https://..." style="width: 100%; font-size: 13px;" />
+            <div class="avatar-option">
+              <span class="option-title">Option 2: URL de l'image</span>
+              <input type="text" v-model="form.avatar" placeholder="https://..." class="full-input-sm" />
             </div>
             
-            <span v-if="avatarPreviewTemp" style="font-size: 11px; color: #d97706; font-weight: bold; margin-top: 8px; display: block;">
+            <span v-if="avatarPreviewTemp" class="preview-warning">
               ⚠️ Prévisualisation (Modifications non enregistrées)
             </span>
           </div>
@@ -57,36 +55,34 @@
       </div>
 
       <!-- FORMULAIRE DES INFORMATIONS -->
-      <form @submit.prevent="updateProfile" style="display: flex; flex-direction: column; gap: 20px;">
+      <form @submit.prevent="updateProfile" class="profile-form">
         
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">Nom d'utilisateur</label>
-          <input type="text" v-model="form.username" required style="width: 100%;" />
+          <label class="form-label">Nom d'utilisateur</label>
+          <input type="text" v-model="form.username" required class="full-input" />
         </div>
 
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">Adresse Email (Non modifiable)</label>
-          <input type="email" :value="form.email" disabled style="width: 100%; background: #f1f5f9; color: #64748b; cursor: not-allowed;" />
+          <label class="form-label">Adresse Email (Non modifiable)</label>
+          <input type="email" :value="form.email" disabled class="full-input disabled-input" />
         </div>
 
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">Biographie / Description de la chaîne</label>
-          <textarea v-model="form.bio" rows="4" placeholder="Présentez-vous à votre audience..." style="width: 100%; resize: vertical;"></textarea>
+          <label class="form-label">Biographie / Description de la chaîne</label>
+          <textarea v-model="form.bio" rows="4" placeholder="Présentez-vous à votre audience..." class="full-textarea"></textarea>
         </div>
 
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">
-            Date de naissance (Strictement privée 🔒)
-          </label>
-          <input type="date" v-model="form.birthdate" style="width: 100%;" />
-          <span style="font-size: 11px; color: #666; margin-top: 4px; display: block;">
+          <label class="form-label">Date de naissance (Strictement privée 🔒)</label>
+          <input type="date" v-model="form.birthdate" class="full-input" />
+          <span class="privacy-note">
             Votre âge est utilisé uniquement pour débloquer l'accès au catalogue mature (+18). Cette information n'est jamais publiée sur votre profil.
           </span>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
-          <NuxtLink to="/channel" class="neon-btn" style="text-decoration: none; padding: 10px 18px; font-size: 14px;">Annuler</NuxtLink>
-          <button type="submit" class="neon-btn neon-btn-pink" :disabled="saving" style="padding: 10px 24px; font-size: 14px;">
+        <div class="form-actions">
+          <NuxtLink to="/channel" class="neon-btn cancel-btn">Annuler</NuxtLink>
+          <button type="submit" class="neon-btn neon-btn-pink submit-btn" :disabled="saving">
             {{ saving ? 'Enregistrement...' : 'Confirmer / Enregistrer les modifications' }}
           </button>
         </div>
@@ -206,6 +202,156 @@ const updateProfile = async () => {
 </script>
 
 <style scoped>
+.settings-wrapper {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 26px;
+  color: #111111;
+}
+
+.settings-subtitle {
+  margin: 5px 0 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--neon-purple);
+  padding: 40px;
+}
+
+.settings-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.avatar-section {
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #333333;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.avatar-preview-box {
+  position: relative;
+}
+
+.avatar-controls {
+  flex: 1;
+  min-width: 250px;
+}
+
+.avatar-option {
+  margin-bottom: 12px;
+}
+
+.option-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.file-input-sm {
+  font-size: 12px;
+}
+
+.full-input-sm {
+  width: 100%;
+  font-size: 13px;
+}
+
+.preview-warning {
+  font-size: 11px;
+  color: #d97706;
+  font-weight: bold;
+  margin-top: 8px;
+  display: block;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.full-input {
+  width: 100%;
+}
+
+.disabled-input {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.full-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.privacy-note {
+  font-size: 11px;
+  color: #666666;
+  margin-top: 4px;
+  display: block;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.cancel-btn {
+  text-decoration: none;
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.submit-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
 .profile-avatar-preview {
   width: 100px;
   height: 100px;
