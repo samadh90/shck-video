@@ -31,9 +31,7 @@
             
             <label 
               for="avatar-file-input" 
-              style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; opacity: 0; cursor: pointer; transition: opacity 0.2s;"
-              onmouseover="this.style.opacity='1'"
-              onmouseout="this.style.opacity='0'"
+              class="avatar-overlay-label"
             >
               📷 Changer
             </label>
@@ -206,3 +204,25 @@ const updateProfile = async () => {
   }
 }
 </script>
+
+<style scoped>
+.avatar-overlay-label {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.avatar-overlay-label:hover {
+  opacity: 1;
+}
+</style>
