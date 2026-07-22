@@ -1,6 +1,6 @@
 import { defineEventHandler, createError, readMultipartFormData } from 'h3'
-import { db, schema } from '~/server/utils/db'
-import { requireVerifiedUser, generateNanoId } from '~/server/utils/auth'
+import { db, schema } from '~~/server/utils/db'
+import { requireVerifiedUser, generateNanoId } from '~~/server/utils/auth'
 import fs from 'fs'
 import path from 'path'
 

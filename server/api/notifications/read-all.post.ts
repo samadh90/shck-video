@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { eq } from 'drizzle-orm'
-import { requireAuthUser } from '~/server/utils/auth'
+import { requireAuthUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireAuthUser(event)

@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { eq } from 'drizzle-orm'
-import { comparePassword, signToken } from '~/server/utils/auth'
+import { comparePassword, signToken } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)

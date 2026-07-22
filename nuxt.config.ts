@@ -1,9 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-07-22',
-  future: {
-    compatibilityVersion: 4,
-  },
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
@@ -13,7 +10,7 @@ export default defineNuxtConfig({
 
   vite: {
     build: {
-      target: 'es2018',
+      target: 'es2020',
       cssMinify: true,
       minify: 'esbuild'
     }

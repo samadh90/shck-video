@@ -1,7 +1,7 @@
 import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { eq, or } from 'drizzle-orm'
-import { requireVerifiedUser } from '~/server/utils/auth'
+import { requireVerifiedUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireVerifiedUser(event)

@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { requireAuthUser } from '~/server/utils/auth'
+import { requireAuthUser } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuthUser(event)

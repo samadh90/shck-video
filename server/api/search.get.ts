@@ -1,5 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { like, eq, and } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {

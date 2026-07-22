@@ -1,7 +1,7 @@
 import { defineEventHandler, getQuery } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { eq, and, desc } from 'drizzle-orm'
-import { getUserFromEvent, calculateAge } from '~/server/utils/auth'
+import { getUserFromEvent, calculateAge } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)

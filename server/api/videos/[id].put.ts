@@ -1,7 +1,7 @@
 import { defineEventHandler, createError, readMultipartFormData, getRouterParam } from 'h3'
-import { db, schema } from '~/server/utils/db'
+import { db, schema } from '~~/server/utils/db'
 import { eq, or } from 'drizzle-orm'
-import { requireAuthUser } from '~/server/utils/auth'
+import { requireAuthUser } from '~~/server/utils/auth'
 import fs from 'fs'
 import path from 'path'
 
