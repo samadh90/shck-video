@@ -9,6 +9,7 @@ export const users = sqliteTable('users', {
   bio: text('bio'),
   isVerified: integer('is_verified', { mode: 'boolean' }).notNull().default(false),
   verificationToken: text('verification_token'),
+  verificationTokenExpiresAt: text('verification_token_expires_at'),
   birthdate: text('birthdate'),
   createdAt: text('created_at').notNull().$defaultFn(() => new Date().toISOString())
 })

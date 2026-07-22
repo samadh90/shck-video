@@ -4,6 +4,17 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
+  runtimeConfig: {
+    email: {
+      smtpHost: process.env.SMTP_HOST || '',
+      smtpPort: process.env.SMTP_PORT || '587',
+      smtpUser: process.env.SMTP_USER || '',
+      smtpPassword: process.env.SMTP_PASSWORD || '',
+      from: process.env.MAIL_FROM || '',
+      appUrl: process.env.APP_URL || 'http://localhost:3000'
+    }
+  },
+
   // Nuxt 4.5's dev-only page diagnostic is misclassified as lacking a default
   // export by Nuxt's own plugin scanner. It is not needed at runtime.
   hooks: {

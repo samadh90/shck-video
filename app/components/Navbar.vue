@@ -70,10 +70,10 @@
         <button 
           v-if="!user?.isVerified" 
           @click="handleVerifyEmail" 
-          title="Cliquez pour vérifier votre adresse email et débloquer les commentaires et uploads"
+          title="Envoyer un lien de vérification à votre adresse e-mail"
           style="background: #fffbeb; color: #b45309; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;"
         >
-          <span>⚠️</span> Email non vérifié (Vérifier)
+          <span>⚠️</span> Email non vérifié (Envoyer le lien)
         </button>
 
         <!-- Option de Retour au Mode Classique (Present uniquement sur /18plus) -->
@@ -112,7 +112,7 @@ import { useNotifications } from '~/composables/useNotifications'
 
 const route = useRoute()
 const router = useRouter()
-const { token, user, logout, verifyEmail } = useAuth()
+const { token, user, logout, requestEmailVerification } = useAuth()
 const { notifications, unreadCount, showNotifs, fetchNotifications, markNotifsRead, handleNotifClick, startPolling, stopPolling } = useNotifications()
 
 const is18PlusRoute = computed(() => {
@@ -131,11 +131,13 @@ const isAdult = computed(() => {
 })
 
 const handleVerifyEmail = async () => {
-  const success = await verifyEmail()
-  if (success) {
-    alert("Votre adresse email a été vérifiée avec succès ! Les fonctionnalités d'upload et de commentaires sont débloquées.")
+  const result = await requestEmailVerification()
+  if (result?.developmentVerificationUrl && import.meta.client) {
+    window.location.assign(result.developmentVerificationUrl)
+  } else if (result?.success) {
+    alert("Un lien de vérification vient d'être envoyé à votre adresse e-mail.")
   } else {
-    alert("Erreur lors de la vérification de l'email.")
+    alert("Impossible d'envoyer le lien de vérification.")
   }
 }
 

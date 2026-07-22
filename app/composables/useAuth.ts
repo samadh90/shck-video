@@ -45,22 +45,16 @@ export const useAuth = () => {
     }
   }
 
-  const verifyEmail = async () => {
-    if (!token.value) return false
+  const requestEmailVerification = async (): Promise<{ success: boolean, developmentVerificationUrl?: string } | null> => {
+    if (!token.value) return null
     try {
-      const res = await $fetch<{ user?: AuthUser }>('/api/auth/verify-email', {
+      return await $fetch<{ success: boolean, developmentVerificationUrl?: string }>('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token.value}` }
       })
-      if (res.user) {
-        setUser(res.user)
-      } else if (user.value) {
-        setUser({ ...user.value, isVerified: true })
-      }
-      return true
     } catch (err) {
       console.error(err)
-      return false
+      return null
     }
   }
 
@@ -69,7 +63,7 @@ export const useAuth = () => {
     user,
     setAuth,
     setUser,
-    verifyEmail,
+    requestEmailVerification,
     logout,
     loadAuth,
     isAuthenticated: () => !!token.value

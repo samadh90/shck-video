@@ -1,7 +1,8 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq } from 'drizzle-orm'
-import { hashPassword, signToken, generateNanoId } from '~~/server/utils/auth'
+import { hashPassword, signToken, generateEmailVerificationToken, hashEmailVerificationToken } from '~~/server/utils/auth'
+import { getVerificationTokenExpiry, sendVerificationEmail } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -38,16 +39,19 @@ export default defineEventHandler(async (event) => {
   }
 
   const hashedPassword = await hashPassword(password)
-  const verificationToken = generateNanoId(16)
+  const rawVerificationToken = generateEmailVerificationToken()
 
   const [newUser] = await db.insert(schema.users).values({
     email: normalizedEmail,
     username: normalizedUsername,
     password: hashedPassword,
     isVerified: false,
-    verificationToken
+    verificationToken: hashEmailVerificationToken(rawVerificationToken),
+    verificationTokenExpiresAt: getVerificationTokenExpiry()
   }).returning()
   if (!newUser) throw createError({ statusCode: 500, statusMessage: 'Impossible de créer le compte.' })
+
+  const developmentVerificationUrl = await sendVerificationEmail(newUser.email, rawVerificationToken)
 
   const token = signToken({ userId: newUser.id, email: newUser.email })
 
@@ -63,6 +67,7 @@ export default defineEventHandler(async (event) => {
       birthdate: newUser.birthdate
     },
     token,
-    message: 'Compte créé avec succès.'
+    message: 'Compte créé avec succès.',
+    developmentVerificationUrl: developmentVerificationUrl || undefined
   }
 })

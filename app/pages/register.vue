@@ -34,7 +34,7 @@ const register = async () => {
   errorMsg.value = ''
   
   try {
-    const res = await $fetch<{ success: boolean }>('/api/auth/register', {
+    const res = await $fetch<{ success: boolean, developmentVerificationUrl?: string }>('/api/auth/register', {
       method: 'POST',
       body: {
         username: username.value,
@@ -46,6 +46,10 @@ const register = async () => {
     if (!res?.success) throw new Error('La creation du compte a echoue.')
 
     if (res.success) {
+      if (res.developmentVerificationUrl && import.meta.client) {
+        window.location.assign(res.developmentVerificationUrl)
+        return
+      }
       alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
       router.push('/login')
     }
