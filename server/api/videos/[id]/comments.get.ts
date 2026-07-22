@@ -1,6 +1,6 @@
 import { defineEventHandler, createError, getRouterParam } from 'h3'
 import { db, schema } from '~~/server/utils/db'
-import { eq, or, isNull, asc } from 'drizzle-orm'
+import { eq, or, isNull, asc, and, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const idOrCustomId = getRouterParam(event, 'id') || ''
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const targetVideo = videoCheck[0]
+  const targetVideo = videoCheck[0]!
 
   // Commentaires parents
   const topComments = await db.select({

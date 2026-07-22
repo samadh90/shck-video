@@ -54,24 +54,25 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { UserComment } from '#shared/types/models'
 
 const { token, isAuthenticated, logout } = useAuth()
 const router = useRouter()
 
-const comments = ref([])
+const comments = ref<UserComment[]>([])
 const loading = ref(true)
 
 const fetchMyComments = async () => {
   loading.value = true
   try {
-    const data = await $fetch('/api/users/my-comments', {
+    const data = await $fetch<UserComment[]>('/api/users/my-comments', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    comments.value = data || []
+    comments.value = data
   } catch (err) {
     console.error(err)
   } finally {
@@ -87,7 +88,7 @@ onMounted(() => {
   fetchMyComments()
 })
 
-const deleteComment = async (id) => {
+const deleteComment = async (id: number) => {
   if (!confirm('Supprimer ce commentaire ?')) return
   try {
     await $fetch(`/api/comments/${id}`, {
@@ -95,12 +96,12 @@ const deleteComment = async (id) => {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     fetchMyComments()
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la suppression.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')
   }
 }
 
-const formatDate = (d) => {
+const formatDate = (d: string) => {
   return new Date(d).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',

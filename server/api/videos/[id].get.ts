@@ -55,8 +55,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const targetVideo = videoList[0].video
-  const videoUser = videoList[0].user
+  const targetVideo = videoList[0]!.video
+  const videoUser = videoList[0]!.user
 
   // Incrémenter le nombre de vues
   await db.update(schema.videos)
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
       .where(and(eq(schema.likes.videoId, targetVideo.id), eq(schema.likes.userId, currentUser.id)))
       .limit(1)
     if (userLikeCheck.length > 0) {
-      userLikeStatus = userLikeCheck[0].isLike
+      userLikeStatus = userLikeCheck[0]!.isLike
     }
   }
 

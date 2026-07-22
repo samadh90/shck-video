@@ -1,17 +1,17 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useState } from '#app'
 import { useAuth } from './useAuth'
+import type { Notification, NotificationsResponse } from '#shared/types/models'
 
 export function useNotifications() {
   const router = useRouter()
   const { token } = useAuth()
 
-  const notifications = useState('global_notifications', () => [])
-  const unreadCount = useState('global_unread_notifications_count', () => 0)
-  const showNotifs = useState('global_show_notifs', () => false)
+  const notifications = useState<Notification[]>('global_notifications', () => [])
+  const unreadCount = useState<number>('global_unread_notifications_count', () => 0)
+  const showNotifs = useState<boolean>('global_show_notifs', () => false)
 
-  let pollInterval = null
+  let pollInterval: ReturnType<typeof setInterval> | undefined
 
   const fetchNotifications = async () => {
     if (!token.value) {
@@ -20,11 +20,11 @@ export function useNotifications() {
       return
     }
     try {
-      const data = await $fetch('/api/notifications', {
+      const data = await $fetch<NotificationsResponse>('/api/notifications', {
         headers: { 'Authorization': `Bearer ${token.value}` }
       })
-      notifications.value = (data as any)?.notifications || data || []
-      unreadCount.value = (data as any)?.unreadCount ?? (data || []).filter((n: any) => !n.read).length
+      notifications.value = data.notifications
+      unreadCount.value = data.unreadCount
     } catch (err) {
       console.error('Erreur chargement notifications:', err)
     }
@@ -37,27 +37,27 @@ export function useNotifications() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token.value}` }
       })
-      notifications.value.forEach((n: any) => (n.read = true))
+      notifications.value.forEach((notification) => (notification.read = true))
       unreadCount.value = 0
     } catch (err) {
       console.error(err)
     }
   }
 
-  const handleNotifClick = async (n: any) => {
+  const handleNotifClick = async (notification: Notification) => {
     if (!token.value) return
     try {
-      if (!n.read) {
+      if (!notification.read) {
         await $fetch('/api/notifications/read-all', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token.value}` }
         })
-        n.read = true
+        notification.read = true
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
       showNotifs.value = false
-      if (n.link) {
-        router.push(n.link)
+      if (notification.link) {
+        router.push(notification.link)
       }
     } catch (err) {
       console.error(err)
@@ -74,7 +74,7 @@ export function useNotifications() {
   const stopPolling = () => {
     if (pollInterval) {
       clearInterval(pollInterval)
-      pollInterval = null
+      pollInterval = undefined
     }
   }
 

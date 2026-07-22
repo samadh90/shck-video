@@ -1,13 +1,14 @@
 import { useState } from '#app'
+import type { AuthUser } from '#shared/types/models'
 
 export const useAuth = () => {
-  const token = useState('auth_token', () => null)
-  const user = useState('auth_user', () => null)
+  const token = useState<string | null>('auth_token', () => null)
+  const user = useState<AuthUser | null>('auth_user', () => null)
 
-  const setAuth = (newToken, newUser) => {
+  const setAuth = (newToken: string, newUser: AuthUser) => {
     token.value = newToken
     user.value = newUser
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.setItem('auth_token', newToken)
       localStorage.setItem('auth_user', JSON.stringify(newUser))
     }
@@ -16,7 +17,7 @@ export const useAuth = () => {
   const logout = () => {
     token.value = null
     user.value = null
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
     }
@@ -29,7 +30,7 @@ export const useAuth = () => {
       if (storedToken && storedUser) {
         try {
           token.value = storedToken
-          user.value = JSON.parse(storedUser)
+          user.value = JSON.parse(storedUser) as AuthUser
         } catch {
           logout()
         }
@@ -37,9 +38,9 @@ export const useAuth = () => {
     }
   }
 
-  const setUser = (newUser) => {
+  const setUser = (newUser: AuthUser) => {
     user.value = newUser
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.setItem('auth_user', JSON.stringify(newUser))
     }
   }
@@ -47,13 +48,13 @@ export const useAuth = () => {
   const verifyEmail = async () => {
     if (!token.value) return false
     try {
-      const res = await $fetch('/api/auth/verify-email', {
+      const res = await $fetch<{ user?: AuthUser }>('/api/auth/verify-email', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token.value}` }
       })
       if (res.user) {
-        setUser({ ...user.value, ...res.user })
-      } else {
+        setUser(res.user)
+      } else if (user.value) {
         setUser({ ...user.value, isVerified: true })
       }
       return true

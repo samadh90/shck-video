@@ -141,10 +141,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { PublicUser, UserComment, UserProfile } from '#shared/types/models'
 
 const { token, user, isAuthenticated } = useAuth()
 const router = useRouter()
@@ -160,27 +161,36 @@ const isAdult = computed(() => {
   return age >= 18
 })
 
-const profile = ref({ id: null, username: '', email: '', avatar: '', bio: '', followersCount: 0 })
-const subscriptions = ref([])
-const myComments = ref([])
+const profile = ref<UserProfile>({
+  id: 0,
+  username: '',
+  email: '',
+  avatar: null,
+  bio: null,
+  birthdate: null,
+  isVerified: false,
+  followersCount: 0
+})
+const subscriptions = ref<PublicUser[]>([])
+const myComments = ref<UserComment[]>([])
 const loadingComments = ref(true)
 
 const loadDashboard = async () => {
   try {
-    const me = await $fetch('/api/users/me', {
+    const me = await $fetch<UserProfile>('/api/users/me', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     profile.value = me
 
-    const subsData = await $fetch('/api/users/subscriptions', {
+    const subsData = await $fetch<PublicUser[]>('/api/users/subscriptions', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    subscriptions.value = subsData || []
+    subscriptions.value = subsData
 
-    const commentsData = await $fetch('/api/users/my-comments', {
+    const commentsData = await $fetch<UserComment[]>('/api/users/my-comments', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    myComments.value = commentsData || []
+    myComments.value = commentsData
   } catch (err) {
     console.error(err)
   } finally {
@@ -196,7 +206,7 @@ onMounted(() => {
   loadDashboard()
 })
 
-const deleteComment = async (id) => {
+const deleteComment = async (id: number) => {
   if (!confirm('Supprimer ce commentaire ?')) return
   try {
     await $fetch(`/api/comments/${id}`, {
@@ -204,12 +214,12 @@ const deleteComment = async (id) => {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     loadDashboard()
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la suppression.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')
   }
 }
 
-const formatDate = (d) => {
+const formatDate = (d: string) => {
   return new Date(d).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',

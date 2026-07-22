@@ -93,10 +93,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { AuthUser } from '#shared/types/models'
 
 const { token, isAuthenticated, setUser } = useAuth()
 const router = useRouter()
@@ -105,7 +106,7 @@ const loading = ref(true)
 const saving = ref(false)
 const avatarPreviewTemp = ref(false)
 // Track blob URL for cleanup when leaving the page
-let tempBlobUrl = null
+let tempBlobUrl: string | null = null
 
 const form = ref({
   username: '',
@@ -123,7 +124,7 @@ const avatarUrl = computed(() => {
 
 const fetchProfile = async () => {
   try {
-    const data = await $fetch('/api/users/me', {
+    const data = await $fetch<AuthUser>('/api/users/me', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     form.value = {
@@ -156,16 +157,16 @@ onUnmounted(() => {
   }
 })
 
-const handleLocalAvatarUpload = (e) => {
-  const file = e.target.files[0]
+const handleLocalAvatarUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     // Revoke previous temp blob URL to prevent memory leak
     if (tempBlobUrl) {
       URL.revokeObjectURL(tempBlobUrl)
     }
     const reader = new FileReader()
-    reader.onload = (event) => {
-      form.value.avatar = event.target.result
+    reader.onload = () => {
+      form.value.avatar = typeof reader.result === 'string' ? reader.result : ''
       avatarPreviewTemp.value = true
     }
     reader.readAsDataURL(file)
@@ -175,7 +176,7 @@ const handleLocalAvatarUpload = (e) => {
 const updateProfile = async () => {
   saving.value = true
   try {
-    const res = await $fetch('/api/users/profile', {
+    const res = await $fetch<{ user?: AuthUser }>('/api/users/profile', {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token.value}` },
       body: {
@@ -193,8 +194,8 @@ const updateProfile = async () => {
     avatarPreviewTemp.value = false
     alert('Profil mis à jour avec succès !')
     router.push('/channel')
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la mise à jour du profil.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la mise à jour du profil.')
   } finally {
     saving.value = false
   }

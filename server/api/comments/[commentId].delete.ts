@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const existingComment = commentCheck[0]
+  const existingComment = commentCheck[0]!
 
   if (existingComment.userId !== currentUser.id) {
     throw createError({

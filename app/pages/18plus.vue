@@ -78,15 +78,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { Video } from '#shared/types/models'
 
 const { token, user, isAuthenticated } = useAuth()
 const router = useRouter()
 
-const videos = ref([])
+const videos = ref<Video[]>([])
 const loading = ref(true)
 
 const checkAccessAndFetch = async () => {
@@ -97,16 +98,14 @@ const checkAccessAndFetch = async () => {
   }
 
   // Verification stricte de l'âge >= 18
-  let userAge = user.value?.age
-  if (userAge === undefined || userAge === null) {
-    if (user.value?.birthdate) {
-      const birth = new Date(user.value.birthdate)
-      if (!isNaN(birth.getTime())) {
-        const today = new Date()
-        userAge = today.getFullYear() - birth.getFullYear()
-        const m = today.getMonth() - birth.getMonth()
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) userAge--
-      }
+  let userAge: number | null = null
+  if (user.value?.birthdate) {
+    const birth = new Date(user.value.birthdate)
+    if (!isNaN(birth.getTime())) {
+      const today = new Date()
+      userAge = today.getFullYear() - birth.getFullYear()
+      const m = today.getMonth() - birth.getMonth()
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) userAge--
     }
   }
 
@@ -117,10 +116,9 @@ const checkAccessAndFetch = async () => {
   }
 
   try {
-    const data = await $fetch('/api/videos?is18Plus=true', {
+    videos.value = await $fetch<Video[]>('/api/videos?is18Plus=true', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    videos.value = data || []
   } catch (err) {
     console.error(err)
   } finally {

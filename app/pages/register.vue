@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -34,7 +34,7 @@ const register = async () => {
   errorMsg.value = ''
   
   try {
-    const res = await $fetch('/api/auth/register', {
+    const res = await $fetch<{ success: boolean }>('/api/auth/register', {
       method: 'POST',
       body: {
         username: username.value,
@@ -49,8 +49,8 @@ const register = async () => {
       alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
       router.push('/login')
     }
-  } catch (err) {
-    errorMsg.value = err.data?.error || 'Erreur lors de la création du compte.'
+  } catch (error: unknown) {
+    errorMsg.value = error instanceof Error ? error.message : 'Erreur lors de la création du compte.'
   } finally {
     loading.value = false
   }

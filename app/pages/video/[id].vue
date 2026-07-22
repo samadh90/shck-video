@@ -282,34 +282,35 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { Comment, Video, VideoDetails } from '#shared/types/models'
 
 const route = useRoute()
 const router = useRouter()
 const { token, user } = useAuth()
 
-const videoPlayerRef = ref(null)
+const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 
-const video = ref(null)
-const videosList = ref([])
-const comments = ref([])
+const video = ref<VideoDetails | null>(null)
+const videosList = ref<Video[]>([])
+const comments = ref<Comment[]>([])
 const pending = ref(true)
 const errorMsg = ref('')
 
 const likesCount = ref(0)
 const dislikesCount = ref(0)
-const userLikeStatus = ref(null)
+const userLikeStatus = ref<boolean | null>(null)
 const isFollowing = ref(false)
-const subscribersCount = ref(null)
+const subscribersCount = ref<number | null>(null)
 
 const newComment = ref('')
-const activeReplyId = ref(null)
+const activeReplyId = ref<number | null>(null)
 const replyText = ref('')
 
-const editingCommentId = ref(null)
+const editingCommentId = ref<number | null>(null)
 const editCommentContent = ref('')
 
 const submittingComment = ref(false)
@@ -319,7 +320,7 @@ const visibleComments = computed(() => {
   return comments.value.slice(0, visibleCommentsLimit.value)
 })
 
-const videoId = computed(() => route.params.id)
+const videoId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 
 const isOwner = computed(() => {
   return video.value && user.value && video.value.userId === user.value.id
@@ -347,26 +348,26 @@ const loadData = async () => {
   pending.value = true
   errorMsg.value = ''
   
-  const headers = token.value ? { 'Authorization': `Bearer ${token.value}` } : {}
+  const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
 
   try {
     const [vidData, allVideos, videoComments] = await Promise.all([
-      $fetch(`/api/videos/${videoId.value}`, { headers }),
-      $fetch('/api/videos'),
-      $fetch(`/api/videos/${videoId.value}/comments`)
+      $fetch<VideoDetails>(`/api/videos/${videoId.value}`, { headers }),
+      $fetch<Video[]>('/api/videos'),
+      $fetch<Comment[]>(`/api/videos/${videoId.value}/comments`)
     ])
 
     video.value = vidData
     likesCount.value = vidData.likesCount || 0
     dislikesCount.value = vidData.dislikesCount || 0
     userLikeStatus.value = vidData.userLikeStatus
-    isFollowing.value = vidData.isFollowingOwner
+    isFollowing.value = vidData.isFollowing
     subscribersCount.value = vidData.subscribersCount
 
-    videosList.value = allVideos || []
-    comments.value = videoComments || []
-  } catch (err) {
-    errorMsg.value = err.data?.error || 'Impossible de charger la vidéo.'
+    videosList.value = allVideos
+    comments.value = videoComments
+  } catch (error: unknown) {
+    errorMsg.value = error instanceof Error ? error.message : 'Impossible de charger la vidéo.'
   } finally {
     pending.value = false
   }
@@ -395,39 +396,40 @@ const toggleFollow = async () => {
     return
   }
   try {
-    const res = await $fetch(`/api/users/${video.value.userId}/follow`, {
+    if (!video.value) return
+    const res = await $fetch<{ isFollowing: boolean, subscribersCount: number }>(`/api/users/${video.value.userId}/follow`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     isFollowing.value = res.isFollowing
     if (subscribersCount.value !== null) {
-      subscribersCount.value += res.isFollowing ? 1 : -1
+      subscribersCount.value = res.subscribersCount
     }
   } catch (err) {
     console.error(err)
   }
 }
 
-const toggleLike = async (isLike) => {
+const toggleLike = async (isLike: boolean) => {
   if (!token.value) {
     router.push('/login')
     return
   }
   try {
-    const res = await $fetch(`/api/videos/${videoId.value}/like`, {
+    const res = await $fetch<{ likesCount: number, dislikesCount: number, userLikeStatus: boolean | null }>(`/api/videos/${videoId.value}/like`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token.value}` },
       body: { isLike }
     })
     likesCount.value = res.likesCount
     dislikesCount.value = res.dislikesCount
-    userLikeStatus.value = userLikeStatus.value === isLike ? null : isLike
+    userLikeStatus.value = res.userLikeStatus
   } catch (err) {
     console.error(err)
   }
 }
 
-const toggleReplyForm = (commentId) => {
+const toggleReplyForm = (commentId: number) => {
   if (activeReplyId.value === commentId) {
     activeReplyId.value = null
   } else {
@@ -436,13 +438,13 @@ const toggleReplyForm = (commentId) => {
   }
 }
 
-const postComment = async (parentId = null) => {
+const postComment = async (parentId: number | null = null) => {
   const content = parentId ? replyText.value : newComment.value
   if (!content.trim() || !token.value) return
 
   submittingComment.value = true
   try {
-    const created = await $fetch(`/api/videos/${videoId.value}/comments`, {
+    const created = await $fetch<Comment>(`/api/videos/${videoId.value}/comments`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token.value}` },
       body: { content, parentId }
@@ -461,37 +463,39 @@ const postComment = async (parentId = null) => {
       comments.value.unshift(created)
       newComment.value = ''
     }
-  } catch (err) {
-    alert(err.data?.error || "Erreur lors de la publication.")
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la publication.')
   } finally {
     submittingComment.value = false
   }
 }
 
-const startEditComment = (c) => {
-  editingCommentId.value = c.id
-  editCommentContent.value = c.content
+const startEditComment = (comment: Comment) => {
+  editingCommentId.value = comment.id
+  editCommentContent.value = comment.content
 }
 
-const saveEditedComment = async (commentId) => {
+const saveEditedComment = async (commentId: number) => {
   if (!editCommentContent.value.trim()) return
   try {
-    const updated = await $fetch(`/api/comments/${commentId}`, {
+    const updated = await $fetch<{ comment?: Comment }>(`/api/comments/${commentId}`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token.value}` },
       body: { content: editCommentContent.value }
     })
 
-    let found = comments.value.find(c => c.id === commentId)
+    const updatedComment = updated.comment
+    if (!updatedComment) throw new Error('Invalid comment update response.')
+    const found = comments.value.find(comment => comment.id === commentId)
     if (found) {
-      found.content = updated.content
+      found.content = updatedComment.content
       found.isEdited = true
     } else {
       for (const parent of comments.value) {
         if (parent.replies) {
           const r = parent.replies.find(reply => reply.id === commentId)
           if (r) {
-            r.content = updated.content
+            r.content = updatedComment.content
             r.isEdited = true
             break
           }
@@ -501,12 +505,12 @@ const saveEditedComment = async (commentId) => {
 
     editingCommentId.value = null
     editCommentContent.value = ''
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la modification du commentaire.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la modification du commentaire.')
   }
 }
 
-const deleteComment = async (commentId) => {
+const deleteComment = async (commentId: number) => {
   if (!confirm('Supprimer ce commentaire ?')) return
   try {
     await $fetch(`/api/comments/${commentId}`, {
@@ -520,8 +524,8 @@ const deleteComment = async (commentId) => {
         parent.replies = parent.replies.filter(reply => reply.id !== commentId)
       }
     })
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la suppression.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')
   }
 }
 
@@ -533,12 +537,12 @@ const deleteVideo = async () => {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     router.push('/')
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la suppression.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')
   }
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('fr-FR', {
     day: 'numeric',

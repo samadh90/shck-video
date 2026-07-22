@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, createError } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq } from 'drizzle-orm'
 import { requireAuthUser } from '~~/server/utils/auth'
@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
     .set({ isVerified: true, verificationToken: null })
     .where(eq(schema.users.id, user.id))
     .returning()
+  if (!updatedUser) throw createError({ statusCode: 404, statusMessage: 'Utilisateur introuvable.' })
 
   return {
     message: 'Votre adresse email a été vérifiée avec succès !',

@@ -47,6 +47,7 @@ export default defineEventHandler(async (event) => {
     isVerified: false,
     verificationToken
   }).returning()
+  if (!newUser) throw createError({ statusCode: 500, statusMessage: 'Impossible de créer le compte.' })
 
   const token = signToken({ userId: newUser.id, email: newUser.email })
 

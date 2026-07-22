@@ -16,10 +16,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { AuthUser } from '#shared/types/models'
 
 const email = ref('')
 const password = ref('')
@@ -33,7 +34,7 @@ const login = async () => {
   errorMsg.value = ''
   
   try {
-    const res = await $fetch('/api/auth/login', {
+    const res = await $fetch<{ success: boolean, token?: string, user?: AuthUser }>('/api/auth/login', {
       method: 'POST',
       body: { email: email.value, password: password.value }
     })
@@ -44,8 +45,8 @@ const login = async () => {
       setAuth(res.token, res.user)
       router.push('/')
     }
-  } catch (err) {
-    errorMsg.value = err.data?.error || 'Identifiants incorrects.'
+  } catch (error: unknown) {
+    errorMsg.value = error instanceof Error ? error.message : 'Identifiants incorrects.'
   } finally {
     loading.value = false
   }

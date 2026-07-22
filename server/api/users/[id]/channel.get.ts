@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const channelUser = usersList[0]
+  const channelUser = usersList[0]!
 
   // Compte des abonnés
   const followersResult = await db.select({ count: sql<number>`count(*)` })
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
       ))
       .limit(1)
     if (userRatingCheck.length > 0) {
-      userRating = userRatingCheck[0].stars
+      userRating = userRatingCheck[0]!.stars
     }
   }
 

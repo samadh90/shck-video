@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const user = usersList[0]
+  const user = usersList[0]!
   const isValid = await comparePassword(password, user.password)
   if (!isValid) {
     throw createError({

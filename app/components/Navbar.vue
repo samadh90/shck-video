@@ -104,7 +104,7 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -146,7 +146,7 @@ const showSearchBar = computed(() => {
 })
 
 // Debounced search — prevents API spam on every keystroke (300ms delay)
-let searchDebounceTimer = null
+let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined
 const onSearchInput = () => {
   if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
@@ -177,7 +177,7 @@ watch(() => route.path, () => {
   fetchNotifications()
 })
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('fr-FR', {
     day: 'numeric',

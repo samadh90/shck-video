@@ -15,11 +15,11 @@
       <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 35px;">
         
         <div style="display: flex; align-items: center; gap: 20px;">
-          <img :src="channel.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${channel.user?.username}`" loading="lazy" decoding="async" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--neon-purple); object-fit: cover;" />
+          <img :src="channel.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${channel.username}`" loading="lazy" decoding="async" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--neon-purple); object-fit: cover;" />
           <div>
-            <h1 style="margin: 0 0 6px 0; font-size: 26px; color: #111;">{{ channel.user?.username }}</h1>
+            <h1 style="margin: 0 0 6px 0; font-size: 26px; color: #111;">{{ channel.username }}</h1>
             <p style="margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; max-width: 500px;">
-              {{ channel.user?.bio || "Aucune biographie disponible." }}
+              {{ channel.bio || "Aucune biographie disponible." }}
             </p>
             <div style="font-size: 13px; color: #555; font-weight: 500;">
               <!-- Masquage strict du nombre d'abonnés sur profil public d'autrui -->
@@ -120,26 +120,27 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { Channel } from '#shared/types/models'
 
 const route = useRoute()
 const router = useRouter()
 const { token, user } = useAuth()
 
-const channel = ref(null)
+const channel = ref<Channel | null>(null)
 const loading = ref(true)
 const errorMsg = ref('')
 
 const isFollowing = ref(false)
-const followersCount = ref(null)
-const avgRating = ref('0.0')
+const followersCount = ref<number | null>(null)
+const avgRating = ref(0)
 const totalRatings = ref(0)
-const userRating = ref(null)
+const userRating = ref<number | null>(null)
 
-const targetUserId = computed(() => parseInt(route.params.id, 10))
+const targetUserId = computed(() => parseInt(typeof route.params.id === 'string' ? route.params.id : '', 10))
 
 const channelSearchQuery = ref('')
 
@@ -162,18 +163,18 @@ const fetchChannel = async () => {
   loading.value = true
   errorMsg.value = ''
 
-  const headers = token.value ? { 'Authorization': `Bearer ${token.value}` } : {}
+  const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
 
   try {
-    const data = await $fetch(`/api/users/${targetUserId.value}/channel`, { headers })
-    channel.value = data
-    isFollowing.value = data.isFollowing
-    followersCount.value = data.followersCount
-    avgRating.value = data.avgRating
-    totalRatings.value = data.totalRatings
-    userRating.value = data.userRating
-  } catch (err) {
-    errorMsg.value = err.data?.error || 'Impossible d\'afficher ce profil.'
+    const data = await $fetch<{ channel: Channel }>(`/api/users/${targetUserId.value}/channel`, { headers })
+    channel.value = data.channel
+    isFollowing.value = data.channel.isFollowing
+    followersCount.value = data.channel.followersCount
+    avgRating.value = data.channel.averageRating
+    totalRatings.value = data.channel.ratingsCount
+    userRating.value = data.channel.userRating
+  } catch (error: unknown) {
+    errorMsg.value = error instanceof Error ? error.message : 'Impossible d\'afficher ce profil.'
   } finally {
     loading.value = false
   }
@@ -189,20 +190,20 @@ const toggleFollow = async () => {
     return
   }
   try {
-    const res = await $fetch(`/api/users/${targetUserId.value}/follow`, {
+    const res = await $fetch<{ isFollowing: boolean, subscribersCount: number }>(`/api/users/${targetUserId.value}/follow`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     isFollowing.value = res.isFollowing
     if (followersCount.value !== null) {
-      followersCount.value += res.isFollowing ? 1 : -1
+      followersCount.value = res.subscribersCount
     }
-  } catch (err) {
-    alert(err.data?.error || 'Erreur')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur')
   }
 }
 
-const rateChannel = async (stars) => {
+const rateChannel = async (stars: number) => {
   if (!token.value) {
     router.push('/login')
     return
@@ -212,16 +213,16 @@ const rateChannel = async (stars) => {
     return
   }
   try {
-    const res = await $fetch(`/api/users/${targetUserId.value}/rate`, {
+    const res = await $fetch<{ averageRating: number, ratingsCount: number, userRating: number }>(`/api/users/${targetUserId.value}/rate`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token.value}` },
       body: { stars }
     })
-    avgRating.value = res.avgRating
-    totalRatings.value = res.totalRatings
-    userRating.value = stars
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de l\'évaluation.')
+    avgRating.value = res.averageRating
+    totalRatings.value = res.ratingsCount
+    userRating.value = res.userRating
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de l\'évaluation.')
   }
 }
 </script>

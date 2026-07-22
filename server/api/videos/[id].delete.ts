@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const video = videoCheck[0]
+  const video = videoCheck[0]!
 
   if (video.userId !== currentUser.id) {
     throw createError({

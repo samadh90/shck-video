@@ -31,14 +31,14 @@ export const getUserFromEvent = async (event: H3Event) => {
   const authHeader = getHeader(event, 'authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null
 
-  const token = authHeader.split(' ')[1]
+  const token = authHeader.slice('Bearer '.length)
   const decoded = verifyToken(token)
   if (!decoded || !decoded.userId) return null
 
   const userList = await db.select().from(schema.users).where(eq(schema.users.id, decoded.userId)).limit(1)
   if (!userList.length) return null
 
-  return userList[0]
+  return userList[0]!
 }
 
 export const requireAuthUser = async (event: H3Event) => {
@@ -68,7 +68,7 @@ export const generateNanoId = (length: number = 9): string => {
   let result = ''
   const bytes = crypto.randomBytes(length)
   for (let i = 0; i < length; i++) {
-    result += chars[bytes[i] % chars.length]
+    result += chars[bytes[i]! % chars.length]
   }
   return result
 }

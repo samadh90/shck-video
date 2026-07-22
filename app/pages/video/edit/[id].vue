@@ -192,16 +192,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { VideoDetails } from '#shared/types/models'
 
 const route = useRoute()
 const router = useRouter()
 const { token, user, isAuthenticated } = useAuth()
 
-const videoId = computed(() => route.params.id)
+const videoId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -221,8 +222,8 @@ const form = ref({
   thumbnail: ''
 })
 
-const newVideoFile = ref(null)
-const newThumbFile = ref(null)
+const newVideoFile = ref<File | null>(null)
+const newThumbFile = ref<File | null>(null)
 
 const liveVideoUrl = ref('')
 const liveThumbUrl = ref('')
@@ -231,7 +232,7 @@ const fetchVideoData = async () => {
   loading.value = true
   errorMsg.value = ''
   try {
-    const data = await $fetch(`/api/videos/${videoId.value}`, {
+    const data = await $fetch<VideoDetails>(`/api/videos/${videoId.value}`, {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
 
@@ -250,8 +251,8 @@ const fetchVideoData = async () => {
       thumbnail: data.thumbnail || ''
     }
     viewsCount.value = data.views || 0
-  } catch (err) {
-    errorMsg.value = err.data?.error || 'Erreur lors du chargement de la vidéo.'
+  } catch (error: unknown) {
+    errorMsg.value = error instanceof Error ? error.message : 'Erreur lors du chargement de la vidéo.'
   } finally {
     loading.value = false
   }
@@ -275,8 +276,8 @@ onUnmounted(() => {
   }
 })
 
-const handleNewVideoFile = (e) => {
-  const file = e.target.files[0]
+const handleNewVideoFile = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     // Revoke previous blob URL before creating a new one
     if (liveVideoUrl.value && liveVideoUrl.value.startsWith('blob:')) {
@@ -287,8 +288,8 @@ const handleNewVideoFile = (e) => {
   }
 }
 
-const handleNewThumbFile = (e) => {
-  const file = e.target.files[0]
+const handleNewThumbFile = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     // Revoke previous blob URL before creating a new one
     if (liveThumbUrl.value && liveThumbUrl.value.startsWith('blob:')) {
@@ -309,7 +310,7 @@ const saveVideo = async () => {
   formData.append('description', form.value.description)
   formData.append('category', form.value.category)
   formData.append('visibility', form.value.visibility)
-  formData.append('is18Plus', form.value.is18Plus)
+  formData.append('is18Plus', String(form.value.is18Plus))
 
   if (newVideoFile.value) {
     formData.append('video', newVideoFile.value)

@@ -91,25 +91,25 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { PublicUser, Video } from '#shared/types/models'
 
 const route = useRoute()
 const { token } = useAuth()
-const subscriptions = ref([])
-const videos = ref([])
+const subscriptions = ref<PublicUser[]>([])
+const videos = ref<Video[]>([])
 const pending = ref(true)
 
 const fetchVideos = async () => {
   pending.value = true
   try {
     const isMature = route.query.mature === '1'
-    const headers = token.value ? { 'Authorization': `Bearer ${token.value}` } : {}
+    const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
     const url = isMature ? '/api/videos?is18Plus=true' : '/api/videos'
-    const data = await $fetch(url, { headers })
-    videos.value = data || []
+    videos.value = await $fetch<Video[]>(url, { headers })
   } catch (err) {
     console.error(err)
   } finally {
@@ -124,10 +124,9 @@ watch(() => route.query.mature, () => {
 const fetchSubscriptions = async () => {
   if (!token.value) return
   try {
-    const data = await $fetch('/api/users/subscriptions', {
+    subscriptions.value = await $fetch<PublicUser[]>('/api/users/subscriptions', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    subscriptions.value = data || []
   } catch (err) {
     console.error(err)
   }

@@ -96,21 +96,22 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import type { PublicUser, Video } from '#shared/types/models'
 
 const route = useRoute()
 
 const activeQuery = ref('')
-const channels = ref([])
-const videos = ref([])
+const channels = ref<PublicUser[]>([])
+const videos = ref<Video[]>([])
 const loading = ref(true)
 
 const totalResults = computed(() => channels.value.length + videos.value.length)
 
 const fetchSearchResults = async () => {
-  const q = route.query.q || ''
+  const q = typeof route.query.q === 'string' ? route.query.q : ''
   activeQuery.value = q
 
   if (!q.trim()) {
@@ -122,9 +123,9 @@ const fetchSearchResults = async () => {
 
   loading.value = true
   try {
-    const data = await $fetch(`/api/search?q=${encodeURIComponent(q)}`)
-    channels.value = data.channels || []
-    videos.value = data.videos || []
+    const data = await $fetch<{ channels: PublicUser[], videos: Video[] }>(`/api/search?q=${encodeURIComponent(q)}`)
+    channels.value = data.channels
+    videos.value = data.videos
   } catch (err) {
     console.error(err)
   } finally {

@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const targetVideo = videoCheck[0]
+  const targetVideo = videoCheck[0]!
   const body = await readBody(event)
   const { isLike } = body || {}
 
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
   let userLikeStatus: boolean | null = null
 
   if (existingLike.length > 0) {
-    if (existingLike[0].isLike === isLike) {
+    if (existingLike[0]!.isLike === isLike) {
       // Toggle off
       await db.delete(schema.likes)
         .where(and(

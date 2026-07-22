@@ -156,7 +156,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -172,8 +172,8 @@ const form = ref({
   description: ''
 })
 
-const videoFile = ref(null)
-const thumbFile = ref(null)
+const videoFile = ref<File | null>(null)
+const thumbFile = ref<File | null>(null)
 
 const liveVideoUrl = ref('')
 const liveThumbUrl = ref('')
@@ -181,8 +181,8 @@ const liveThumbUrl = ref('')
 const uploading = ref(false)
 const progress = ref(0)
 
-const hiddenVideoRef = ref(null)
-const hiddenCanvasRef = ref(null)
+const hiddenVideoRef = ref<HTMLVideoElement | null>(null)
+const hiddenCanvasRef = ref<HTMLCanvasElement | null>(null)
 
 onMounted(() => {
   if (!isAuthenticated()) {
@@ -204,8 +204,8 @@ onUnmounted(() => {
   }
 })
 
-const handleVideoFileSelect = (e) => {
-  const file = e.target.files[0]
+const handleVideoFileSelect = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     // Revoke previous URL before creating a new one
     if (liveVideoUrl.value && liveVideoUrl.value.startsWith('blob:')) {
@@ -225,8 +225,8 @@ const handleVideoFileSelect = (e) => {
   }
 }
 
-const handleThumbFileSelect = (e) => {
-  const file = e.target.files[0]
+const handleThumbFileSelect = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     // Revoke previous thumbnail URL before creating a new one
     if (liveThumbUrl.value && liveThumbUrl.value.startsWith('blob:')) {
@@ -237,17 +237,20 @@ const handleThumbFileSelect = (e) => {
   }
 }
 
-const extractAutomaticThumbnail = (file) => {
+const extractAutomaticThumbnail = (file: File) => {
   const tempUrl = URL.createObjectURL(file)
   const vid = hiddenVideoRef.value
+  if (!vid) return
   vid.src = tempUrl
   vid.currentTime = 1.0
 
   vid.onseeked = () => {
     const canvas = hiddenCanvasRef.value
+    if (!canvas) return
     canvas.width = vid.videoWidth || 640
     canvas.height = vid.videoHeight || 360
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     ctx.drawImage(vid, 0, 0, canvas.width, canvas.height)
     
     canvas.toBlob((blob) => {
@@ -271,7 +274,7 @@ const uploadVideo = () => {
   formData.append('description', form.value.description)
   formData.append('category', form.value.category)
   formData.append('visibility', form.value.visibility)
-  formData.append('is18Plus', form.value.is18Plus)
+  formData.append('is18Plus', String(form.value.is18Plus))
   formData.append('video', videoFile.value)
 
   if (thumbFile.value) {

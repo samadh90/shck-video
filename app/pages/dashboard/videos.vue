@@ -81,15 +81,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
+import type { Video } from '#shared/types/models'
 
 const { token, isAuthenticated } = useAuth()
 const router = useRouter()
 
-const videos = ref([])
+const videos = ref<Video[]>([])
 const loading = ref(true)
 const searchQuery = ref('')
 
@@ -106,10 +107,10 @@ const filteredVideos = computed(() => {
 const fetchMyVideos = async () => {
   loading.value = true
   try {
-    const data = await $fetch('/api/users/my-videos', {
+    const data = await $fetch<Video[]>('/api/users/my-videos', {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
-    videos.value = data || []
+    videos.value = data
   } catch (err) {
     console.error(err)
   } finally {
@@ -125,7 +126,7 @@ onMounted(() => {
   fetchMyVideos()
 })
 
-const confirmDelete = async (id) => {
+const confirmDelete = async (id: number) => {
   if (!confirm('Supprimer définitivement cette vidéo ?')) return
   try {
     await $fetch(`/api/videos/${id}`, {
@@ -133,18 +134,18 @@ const confirmDelete = async (id) => {
       headers: { 'Authorization': `Bearer ${token.value}` }
     })
     fetchMyVideos()
-  } catch (err) {
-    alert(err.data?.error || 'Erreur lors de la suppression.')
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')
   }
 }
 
-const getVisibilityLabel = (v) => {
+const getVisibilityLabel = (v: string | null) => {
   if (v === 'PRIVATE') return '🔒 Privée'
   if (v === 'UNLISTED') return '🔗 Non répertoriée'
   return '🌐 Publique'
 }
 
-const getVisibilityStyle = (v) => {
+const getVisibilityStyle = (v: string | null) => {
   if (v === 'PRIVATE') return 'background: #fee2e2; color: #dc2626;'
   if (v === 'UNLISTED') return 'background: #fef3c7; color: #d97706;'
   return 'background: #dcfce7; color: #16a34a;'

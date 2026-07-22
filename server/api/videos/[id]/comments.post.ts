@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const targetVideo = videoCheck[0]
+  const targetVideo = videoCheck[0]!
   const body = await readBody(event)
   const { content, parentId } = body || {}
 
@@ -39,6 +39,7 @@ export default defineEventHandler(async (event) => {
     userId: currentUser.id,
     parentId: parentId ? parseInt(parentId, 10) : null
   }).returning()
+  if (!newComment) throw createError({ statusCode: 500, statusMessage: 'Impossible de créer le commentaire.' })
 
   // Notification au propriétaire de la vidéo
   if (targetVideo.userId !== currentUser.id) {

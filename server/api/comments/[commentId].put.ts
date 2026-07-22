@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const existingComment = commentCheck[0]
+  const existingComment = commentCheck[0]!
 
   if (existingComment.userId !== currentUser.id) {
     throw createError({
@@ -53,6 +53,7 @@ export default defineEventHandler(async (event) => {
     })
     .where(eq(schema.comments.id, commentId))
     .returning()
+  if (!updatedComment) throw createError({ statusCode: 404, statusMessage: 'Commentaire introuvable.' })
 
   return {
     message: 'Commentaire mis à jour avec succès.',

@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const existingVideo = videoCheck[0]
+  const existingVideo = videoCheck[0]!
 
   if (existingVideo.userId !== currentUser.id) {
     throw createError({
@@ -77,6 +77,7 @@ export default defineEventHandler(async (event) => {
     })
     .where(eq(schema.videos.id, existingVideo.id))
     .returning()
+  if (!updatedVideo) throw createError({ statusCode: 404, statusMessage: 'Vidéo introuvable.' })
 
   return {
     message: 'Vidéo mise à jour avec succès.',
