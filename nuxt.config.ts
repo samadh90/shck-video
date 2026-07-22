@@ -4,6 +4,16 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
+  // Nuxt 4.5's dev-only page diagnostic is misclassified as lacking a default
+  // export by Nuxt's own plugin scanner. It is not needed at runtime.
+  hooks: {
+    'app:resolve': (app) => {
+      app.plugins = app.plugins.filter(
+        plugin => !plugin.src.includes('/pages/runtime/plugins/check-if-page-unused')
+      )
+    }
+  },
+
   nitro: {
     compressPublicAssets: true
   },
