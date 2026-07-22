@@ -43,6 +43,8 @@ const register = async () => {
       }
     })
     
+    if (!res?.success) throw new Error('La creation du compte a echoue.')
+
     if (res.success) {
       alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
       router.push('/login')

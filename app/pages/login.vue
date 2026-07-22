@@ -38,6 +38,8 @@ const login = async () => {
       body: { email: email.value, password: password.value }
     })
     
+    if (!res?.success || !res.token || !res.user) throw new Error('Reponse de connexion invalide.')
+
     if (res.success) {
       setAuth(res.token, res.user)
       router.push('/')

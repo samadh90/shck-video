@@ -23,12 +23,16 @@ export const useAuth = () => {
   }
 
   const loadAuth = () => {
-    if (process.client) {
+    if (import.meta.client) {
       const storedToken = localStorage.getItem('auth_token')
       const storedUser = localStorage.getItem('auth_user')
       if (storedToken && storedUser) {
-        token.value = storedToken
-        user.value = JSON.parse(storedUser)
+        try {
+          token.value = storedToken
+          user.value = JSON.parse(storedUser)
+        } catch {
+          logout()
+        }
       }
     }
   }

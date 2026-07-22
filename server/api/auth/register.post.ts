@@ -6,19 +6,33 @@ import { hashPassword, signToken, generateNanoId } from '~~/server/utils/auth'
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { email, username, password } = body || {}
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+  const normalizedUsername = typeof username === 'string' ? username.trim() : ''
 
-  if (!email || !username || !password) {
+  if (!normalizedEmail || !normalizedUsername || typeof password !== 'string') {
     throw createError({
       statusCode: 400,
       statusMessage: 'Veuillez remplir tous les champs obligatoires.'
     })
   }
 
+  if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+    throw createError({ statusCode: 400, statusMessage: 'Adresse email invalide.' })
+  }
+
+  if (normalizedUsername.length < 3 || normalizedUsername.length > 32) {
+    throw createError({ statusCode: 400, statusMessage: 'Le nom d’utilisateur doit contenir entre 3 et 32 caractères.' })
+  }
+
+  if (password.length < 8) {
+    throw createError({ statusCode: 400, statusMessage: 'Le mot de passe doit contenir au moins 8 caractères.' })
+  }
+
   // Vérification si email existe
-  const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1)
+  const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, normalizedEmail)).limit(1)
   if (existingUser.length > 0) {
     throw createError({
-      statusCode: 400,
+      statusCode: 409,
       statusMessage: 'Cet email est déjà utilisé.'
     })
   }
@@ -27,8 +41,8 @@ export default defineEventHandler(async (event) => {
   const verificationToken = generateNanoId(16)
 
   const [newUser] = await db.insert(schema.users).values({
-    email,
-    username,
+    email: normalizedEmail,
+    username: normalizedUsername,
     password: hashedPassword,
     isVerified: false,
     verificationToken
@@ -37,6 +51,7 @@ export default defineEventHandler(async (event) => {
   const token = signToken({ userId: newUser.id, email: newUser.email })
 
   return {
+    success: true,
     user: {
       id: newUser.id,
       email: newUser.email,
