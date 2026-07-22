@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
-import { H3Event, createError, getHeader } from 'h3'
+import { H3Event, createError, getCookie, getHeader } from 'h3'
 import { db, schema } from './db'
 import { eq } from 'drizzle-orm'
 
@@ -29,9 +29,10 @@ export const verifyToken = (token: string): { userId: number; email: string } | 
 
 export const getUserFromEvent = async (event: H3Event) => {
   const authHeader = getHeader(event, 'authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null
-
-  const token = authHeader.slice('Bearer '.length)
+  const token = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice('Bearer '.length)
+    : getCookie(event, 'auth_token')
+  if (!token) return null
   const decoded = verifyToken(token)
   if (!decoded || !decoded.userId) return null
 

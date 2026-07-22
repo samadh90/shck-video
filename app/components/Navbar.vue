@@ -1,66 +1,66 @@
 <template>
-  <nav class="navbar">
+  <nav class="sticky top-0 z-[200] flex items-center justify-between border-b border-[#e2e8f0] bg-white px-[30px] py-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] [transform:translateZ(0)] [backface-visibility:hidden] max-[768px]:flex-wrap max-[768px]:gap-2.5 max-[768px]:px-4 max-[768px]:py-3">
     <!-- Logo (Dynamique selon le mode +18) -->
-    <NuxtLink v-if="is18PlusRoute" to="/18plus" class="logo" style="color: #ffffff;">
-      SHCK<span style="color: #dc2626; font-weight: 900;">Video +18</span>
+    <NuxtLink v-if="is18PlusRoute" to="/18plus" class="text-2xl font-black tracking-[-0.5px] text-white no-underline">
+      SHCK<span class="font-black text-[#dc2626]">Video +18</span>
     </NuxtLink>
-    <NuxtLink v-else to="/" class="logo">
-      SHCK<span style="color:var(--neon-pink)">Video</span>
+    <NuxtLink v-else to="/" class="text-2xl font-black tracking-[-0.5px] text-[#1a1a1a] no-underline">
+      SHCK<span class="text-[#ff1493]">Video</span>
     </NuxtLink>
 
     <!-- Barre de Recherche Unifiée (Présente uniquement sur l'accueil et la recherche) -->
     <form 
       v-if="showSearchBar" 
       @submit.prevent="performSearch" 
-      style="flex: 1; max-width: 450px; margin: 0 20px; display: flex; align-items: center; background: #f1f5f9; border-radius: 20px; padding: 4px 14px; border: 1px solid #cbd5e1;"
+      class="mx-5 flex max-w-[450px] flex-1 items-center rounded-[20px] border border-[#cbd5e1] bg-[#f1f5f9] px-[14px] py-1"
     >
       <input 
         type="text" 
         v-model="searchQuery"
         @input="onSearchInput"
         placeholder="Rechercher des vidéos, chaînes, créateurs..." 
-        style="border: none; background: transparent; outline: none; width: 100%; font-size: 14px; color: #111;"
+        class="w-full border-0 bg-transparent text-sm text-[#111] outline-none"
       />
-      <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 16px; padding-left: 8px;">
+      <button type="submit" class="cursor-pointer border-0 bg-transparent pl-2 text-base">
         🔍
       </button>
     </form>
-    <div v-else style="flex: 1;"></div>
+    <div v-else class="flex-1"></div>
 
     <!-- Actions Utilisateur & Cloche de Notifications Persistante -->
-    <div class="links" style="display: flex; align-items: center; gap: 15px;">
+    <div class="flex items-center gap-[15px]">
       <template v-if="token">
         
         <!-- CLOCHE DE NOTIFICATIONS GLOBALE PERSISTANTE -->
-        <div style="position: relative;">
-          <button @click="showNotifs = !showNotifs" style="background: none; border: none; cursor: pointer; font-size: 18px; position: relative;">
+          <div class="relative">
+          <button @click="showNotifs = !showNotifs" class="relative cursor-pointer border-0 bg-transparent text-lg">
             🔔
-            <span v-if="unreadCount > 0" style="position: absolute; top: -5px; right: -5px; background: var(--neon-pink); color: white; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span v-if="unreadCount > 0" class="absolute -top-[5px] -right-[5px] flex size-4 items-center justify-center rounded-full bg-[#ff1493] text-[10px] font-bold text-white">
               {{ unreadCount }}
             </span>
           </button>
 
           <!-- Dropdown Panneau Notifications -->
-          <div v-if="showNotifs" style="position: absolute; right: 0; top: 35px; width: 310px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1000; padding: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #eee;">
-              <strong style="font-size: 13px;">Notifications</strong>
-              <button @click="markNotifsRead" style="background: none; border: none; color: var(--neon-purple); font-size: 11px; cursor: pointer; font-weight: bold;">Tout lire</button>
+          <div v-if="showNotifs" class="absolute top-[35px] right-0 z-[1000] w-[310px] rounded-xl border border-[#e2e8f0] bg-white p-3 shadow-[0_10px_25px_rgba(0,0,0,0.12)]">
+            <div class="mb-2 flex items-center justify-between border-b border-[#eee] pb-1.5">
+              <strong class="text-[13px]">Notifications</strong>
+              <button @click="markNotifsRead" class="cursor-pointer border-0 bg-transparent text-[11px] font-bold text-[#8a2be2]">Tout lire</button>
             </div>
             
-            <div v-if="notifications.length === 0" style="font-size: 12px; color: #888; text-align: center; padding: 15px;">
+            <div v-if="notifications.length === 0" class="p-[15px] text-center text-xs text-[#888]">
               Aucune notification.
             </div>
             
-            <div v-else style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+            <div v-else class="flex max-h-[260px] flex-col gap-1.5 overflow-y-auto">
               <div 
                 v-for="n in notifications" 
                 :key="n.id" 
                 @click="handleNotifClick(n)"
-                style="font-size: 12px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s;"
-                :style="{ background: n.read ? '#f8f9fa' : '#f0f4ff', borderLeft: n.read ? 'none' : '3px solid var(--neon-purple)' }"
+                class="cursor-pointer rounded-md p-2 text-xs transition-[background] duration-150"
+                :class="n.read ? 'bg-[#f8f9fa]' : 'border-l-[3px] border-l-[#8a2be2] bg-[#f0f4ff]'"
               >
-                <div style="color: #222; font-weight: 500;">{{ n.message }}</div>
-                <span style="font-size: 10px; color: #888; margin-top: 4px; display: block;">{{ formatDate(n.createdAt) }}</span>
+                <div class="font-medium text-[#222]">{{ n.message }}</div>
+                <span class="mt-1 block text-[10px] text-[#888]">{{ formatDate(n.createdAt) }}</span>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@
           v-if="!user?.isVerified" 
           @click="handleVerifyEmail" 
           title="Envoyer un lien de vérification à votre adresse e-mail"
-          style="background: #fffbeb; color: #b45309; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;"
+          class="flex cursor-pointer items-center gap-1 rounded-xl border border-[#f59e0b] bg-[#fffbeb] px-2.5 py-1 text-[11px] font-bold text-[#b45309]"
         >
           <span>⚠️</span> Email non vérifié (Envoyer le lien)
         </button>
@@ -80,15 +80,14 @@
         <NuxtLink 
           v-if="is18PlusRoute" 
           to="/" 
-          class="neon-btn neon-btn-crimson" 
-          style="text-decoration: none; padding: 6px 12px; font-size: 12px; font-weight: bold;"
+          class="inline-flex cursor-pointer items-center justify-center rounded-lg border-2 border-[#dc2626] bg-transparent px-3 py-1.5 text-xs font-bold text-[#dc2626] no-underline shadow-[0_0_6px_rgba(220,38,38,0.3)] transition-[background-color,box-shadow,color] duration-[180ms] ease-[ease] [transform:translateZ(0)] [backface-visibility:hidden] [will-change:background-color,box-shadow,color] hover:bg-[#dc2626] hover:text-white hover:shadow-[0_4px_14px_rgba(220,38,38,0.4)]"
         >
           ⬅️ Retour Classique
         </NuxtLink>
 
         <!-- Badge Utilisateur (Mon Profil) -->
-        <NuxtLink to="/channel" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #111; font-weight: 600; font-size: 14px;">
-          <img :src="user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.username}`" loading="lazy" decoding="async" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+        <NuxtLink to="/channel" class="flex items-center gap-2 text-sm font-semibold text-[#111] no-underline">
+          <img :src="user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.username}`" loading="lazy" decoding="async" class="size-7 rounded-full object-cover" />
           <span>{{ user?.username }}</span>
         </NuxtLink>
 

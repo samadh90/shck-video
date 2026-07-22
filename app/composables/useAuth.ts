@@ -2,11 +2,17 @@ import { useState } from '#app'
 import type { AuthUser } from '#shared/types/models'
 
 export const useAuth = () => {
-  const token = useState<string | null>('auth_token', () => null)
+  const tokenCookie = useCookie<string | null>('auth_token', {
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: 'lax',
+    secure: !import.meta.dev
+  })
+  const token = useState<string | null>('auth_token', () => tokenCookie.value)
   const user = useState<AuthUser | null>('auth_user', () => null)
 
   const setAuth = (newToken: string, newUser: AuthUser) => {
     token.value = newToken
+    tokenCookie.value = newToken
     user.value = newUser
     if (import.meta.client) {
       localStorage.setItem('auth_token', newToken)
@@ -16,6 +22,7 @@ export const useAuth = () => {
 
   const logout = () => {
     token.value = null
+    tokenCookie.value = null
     user.value = null
     if (import.meta.client) {
       localStorage.removeItem('auth_token')
@@ -30,6 +37,7 @@ export const useAuth = () => {
       if (storedToken && storedUser) {
         try {
           token.value = storedToken
+          tokenCookie.value = storedToken
           user.value = JSON.parse(storedUser) as AuthUser
         } catch {
           logout()

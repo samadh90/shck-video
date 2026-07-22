@@ -283,7 +283,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { Comment, Video, VideoDetails } from '#shared/types/models'
@@ -294,11 +294,7 @@ const { token, user } = useAuth()
 
 const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 
-const video = ref<VideoDetails | null>(null)
-const videosList = ref<Video[]>([])
 const comments = ref<Comment[]>([])
-const pending = ref(true)
-const errorMsg = ref('')
 
 const likesCount = ref(0)
 const dislikesCount = ref(0)
@@ -322,6 +318,34 @@ const visibleComments = computed(() => {
 
 const videoId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 
+interface VideoPageData {
+  video: VideoDetails
+  videos: Video[]
+  comments: Comment[]
+}
+
+const { data: pageData, pending, error, refresh: loadData } = await useAsyncData<VideoPageData>(
+  'video-page',
+  async () => {
+    const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
+    const [video, videos, comments] = await Promise.all([
+      $fetch<VideoDetails>(`/api/videos/${videoId.value}`, { headers }),
+      $fetch<Video[]>('/api/videos'),
+      $fetch<Comment[]>(`/api/videos/${videoId.value}/comments`)
+    ])
+    return { video, videos, comments }
+  },
+  { watch: [videoId] }
+)
+
+const video = computed(() => pageData.value?.video ?? null)
+const videosList = computed(() => pageData.value?.videos ?? [])
+const errorMsg = computed(() => error.value instanceof Error ? error.value.message : '')
+
+watch(token, () => {
+  void loadData()
+})
+
 const isOwner = computed(() => {
   return video.value && user.value && video.value.userId === user.value.id
 })
@@ -344,38 +368,15 @@ const totalCommentsCount = computed(() => {
   return count
 })
 
-const loadData = async () => {
-  pending.value = true
-  errorMsg.value = ''
-  
-  const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
-
-  try {
-    const [vidData, allVideos, videoComments] = await Promise.all([
-      $fetch<VideoDetails>(`/api/videos/${videoId.value}`, { headers }),
-      $fetch<Video[]>('/api/videos'),
-      $fetch<Comment[]>(`/api/videos/${videoId.value}/comments`)
-    ])
-
-    video.value = vidData
-    likesCount.value = vidData.likesCount || 0
-    dislikesCount.value = vidData.dislikesCount || 0
-    userLikeStatus.value = vidData.userLikeStatus
-    isFollowing.value = vidData.isFollowing
-    subscribersCount.value = vidData.subscribersCount
-
-    videosList.value = allVideos
-    comments.value = videoComments
-  } catch (error: unknown) {
-    errorMsg.value = error instanceof Error ? error.message : 'Impossible de charger la vidéo.'
-  } finally {
-    pending.value = false
-  }
-}
-
-onMounted(() => {
-  loadData()
-})
+watch(pageData, (data) => {
+  if (!data) return
+  likesCount.value = data.video.likesCount
+  dislikesCount.value = data.video.dislikesCount
+  userLikeStatus.value = data.video.userLikeStatus
+  isFollowing.value = data.video.isFollowing
+  subscribersCount.value = data.video.subscribersCount
+  comments.value = data.comments
+}, { immediate: true })
 
 onUnmounted(() => {
   // Pause and release video player source to free GPU memory
@@ -386,9 +387,6 @@ onUnmounted(() => {
   }
 })
 
-watch(() => route.params.id, () => {
-  loadData()
-})
 
 const toggleFollow = async () => {
   if (!token.value) {

@@ -82,13 +82,14 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { Video } from '#shared/types/models'
 
-const { token, isAuthenticated } = useAuth()
-const router = useRouter()
+const { token } = useAuth()
 
 const videos = ref<Video[]>([])
 const loading = ref(true)
@@ -119,10 +120,6 @@ const fetchMyVideos = async () => {
 }
 
 onMounted(() => {
-  if (!isAuthenticated()) {
-    router.push('/login')
-    return
-  }
   fetchMyVideos()
 })
 

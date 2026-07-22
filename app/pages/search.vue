@@ -97,47 +97,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { PublicUser, Video } from '#shared/types/models'
 
 const route = useRoute()
 
-const activeQuery = ref('')
-const channels = ref<PublicUser[]>([])
-const videos = ref<Video[]>([])
-const loading = ref(true)
+const activeQuery = computed(() => typeof route.query.q === 'string' ? route.query.q : '')
+const searchQuery = computed(() => activeQuery.value.trim())
 
+const { data: results, pending: loading } = await useAsyncData<{ channels: PublicUser[], videos: Video[] }>(
+  'search-results',
+  async () => searchQuery.value
+    ? $fetch<{ channels: PublicUser[], videos: Video[] }>(`/api/search?q=${encodeURIComponent(searchQuery.value)}`)
+    : { channels: [], videos: [] },
+  { watch: [searchQuery] }
+)
+
+const channels = computed(() => results.value?.channels ?? [])
+const videos = computed(() => results.value?.videos ?? [])
 const totalResults = computed(() => channels.value.length + videos.value.length)
-
-const fetchSearchResults = async () => {
-  const q = typeof route.query.q === 'string' ? route.query.q : ''
-  activeQuery.value = q
-
-  if (!q.trim()) {
-    channels.value = []
-    videos.value = []
-    loading.value = false
-    return
-  }
-
-  loading.value = true
-  try {
-    const data = await $fetch<{ channels: PublicUser[], videos: Video[] }>(`/api/search?q=${encodeURIComponent(q)}`)
-    channels.value = data.channels
-    videos.value = data.videos
-  } catch (err) {
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchSearchResults()
-})
-
-watch(() => route.query.q, () => {
-  fetchSearchResults()
-})
 </script>

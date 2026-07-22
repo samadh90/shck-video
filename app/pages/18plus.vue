@@ -79,24 +79,20 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { Video } from '#shared/types/models'
 
-const { token, user, isAuthenticated } = useAuth()
+const { token, user } = useAuth()
 const router = useRouter()
 
 const videos = ref<Video[]>([])
 const loading = ref(true)
 
 const checkAccessAndFetch = async () => {
-  if (!isAuthenticated()) {
-    alert("Accès refusé. Vous devez être connecté pour accéder à la section +18.")
-    router.push('/login')
-    return
-  }
-
   // Verification stricte de l'âge >= 18
   let userAge: number | null = null
   if (user.value?.birthdate) {

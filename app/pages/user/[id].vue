@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { Channel } from '#shared/types/models'
@@ -130,10 +130,6 @@ const route = useRoute()
 const router = useRouter()
 const { token, user } = useAuth()
 
-const channel = ref<Channel | null>(null)
-const loading = ref(true)
-const errorMsg = ref('')
-
 const isFollowing = ref(false)
 const followersCount = ref<number | null>(null)
 const avgRating = ref(0)
@@ -141,6 +137,21 @@ const totalRatings = ref(0)
 const userRating = ref<number | null>(null)
 
 const targetUserId = computed(() => parseInt(typeof route.params.id === 'string' ? route.params.id : '', 10))
+
+const { data: channelResponse, pending: loading, error, refresh: fetchChannel } = await useAsyncData<{ channel: Channel }>(
+  'public-channel',
+  async () => $fetch<{ channel: Channel }>(`/api/users/${targetUserId.value}/channel`, {
+    headers: token.value ? { Authorization: `Bearer ${token.value}` } : undefined
+  }),
+  { watch: [targetUserId] }
+)
+
+const channel = computed(() => channelResponse.value?.channel ?? null)
+const errorMsg = computed(() => error.value instanceof Error ? error.value.message : '')
+
+watch(token, () => {
+  void fetchChannel()
+})
 
 const channelSearchQuery = ref('')
 
@@ -159,30 +170,14 @@ const isOwnChannel = computed(() => {
   return user.value && user.value.id === targetUserId.value
 })
 
-const fetchChannel = async () => {
-  loading.value = true
-  errorMsg.value = ''
-
-  const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
-
-  try {
-    const data = await $fetch<{ channel: Channel }>(`/api/users/${targetUserId.value}/channel`, { headers })
-    channel.value = data.channel
-    isFollowing.value = data.channel.isFollowing
-    followersCount.value = data.channel.followersCount
-    avgRating.value = data.channel.averageRating
-    totalRatings.value = data.channel.ratingsCount
-    userRating.value = data.channel.userRating
-  } catch (error: unknown) {
-    errorMsg.value = error instanceof Error ? error.message : 'Impossible d\'afficher ce profil.'
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchChannel()
-})
+watch(channel, (currentChannel) => {
+  if (!currentChannel) return
+  isFollowing.value = currentChannel.isFollowing
+  followersCount.value = currentChannel.followersCount
+  avgRating.value = currentChannel.averageRating
+  totalRatings.value = currentChannel.ratingsCount
+  userRating.value = currentChannel.userRating
+}, { immediate: true })
 
 const toggleFollow = async () => {
   if (!token.value) {

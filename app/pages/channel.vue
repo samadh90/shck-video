@@ -142,13 +142,14 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { PublicUser, UserComment, UserProfile } from '#shared/types/models'
 
-const { token, user, isAuthenticated } = useAuth()
-const router = useRouter()
+const { token, user } = useAuth()
 
 const isAdult = computed(() => {
   if (!user.value || !user.value.birthdate) return false
@@ -199,10 +200,6 @@ const loadDashboard = async () => {
 }
 
 onMounted(() => {
-  if (!isAuthenticated()) {
-    router.push('/login')
-    return
-  }
   loadDashboard()
 })
 

@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { AuthUser } from '#shared/types/models'
 
@@ -27,6 +27,7 @@ const password = ref('')
 const errorMsg = ref('')
 const loading = ref(false)
 const router = useRouter()
+const route = useRoute()
 const { setAuth } = useAuth()
 
 const login = async () => {
@@ -43,7 +44,10 @@ const login = async () => {
 
     if (res.success) {
       setAuth(res.token, res.user)
-      router.push('/')
+      const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
+        ? route.query.redirect
+        : '/'
+      router.push(redirect)
     }
   } catch (error: unknown) {
     errorMsg.value = error instanceof Error ? error.message : 'Identifiants incorrects.'

@@ -157,11 +157,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+definePageMeta({ middleware: 'auth' })
+
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 
-const { token, isAuthenticated } = useAuth()
+const { token } = useAuth()
 const router = useRouter()
 
 const form = ref({
@@ -183,12 +185,6 @@ const progress = ref(0)
 
 const hiddenVideoRef = ref<HTMLVideoElement | null>(null)
 const hiddenCanvasRef = ref<HTMLCanvasElement | null>(null)
-
-onMounted(() => {
-  if (!isAuthenticated()) {
-    router.push('/login')
-  }
-})
 
 onUnmounted(() => {
   // Revoke all temporary Object URLs to free memory (GC-friendly)

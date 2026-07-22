@@ -1,54 +1,53 @@
 <template>
-  <div style="max-width: 1280px; margin: 25px auto; padding: 0 20px;">
-    <div class="home-layout">
+  <div class="mx-auto my-6 max-w-7xl px-5">
+    <div class="flex items-start gap-6 max-lg:flex-col">
       
       <!-- COLONNE GAUCHE : GRILLE DES VIDÉOS PUBLIQUES -->
-      <div style="flex: 1; min-width: 0;">
-        <div v-if="pending" style="color: var(--neon-purple); text-align: center; padding: 40px;">
+      <div class="min-w-0 flex-1">
+        <div v-if="pending" class="p-10 text-center text-brand">
           Chargement des vidéos...
         </div>
         
-        <div v-else-if="!videos || videos.length === 0" style="text-align: center; padding: 60px; color: #666; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <div v-else-if="!videos || videos.length === 0" class="rounded-xl border border-line bg-white p-15 text-center text-muted">
           Aucune vidéo publique disponible pour le moment.
         </div>
 
         <div 
           v-else
-          class="video-grid"
-          style="padding: 0;"
+          class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6"
         >
           <div 
             v-for="video in videos" 
             :key="video.id"
-            class="video-card"
+            class="cursor-pointer overflow-hidden rounded-xl border border-line bg-white transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(138,43,226,0.12)]"
           >
-            <NuxtLink :to="`/video/${video.customId || video.id}`" style="text-decoration: none; display: block;">
-              <div class="thumbnail">
+            <NuxtLink :to="`/video/${video.customId || video.id}`" class="block no-underline">
+              <div class="relative flex h-[170px] items-center justify-center overflow-hidden bg-gradient-to-br from-[#1e1e24] to-[#2a2a36] before:text-4xl before:text-white/80 before:content-['▶'] has-[img]:before:hidden">
                 <img 
                   v-if="video.thumbnail" 
                   :src="`/uploads/thumbnails/${video.thumbnail}`" 
                   loading="lazy"
                   decoding="async"
-                  style="width: 100%; height: 100%; object-fit: cover;"
+                  class="size-full object-cover"
                 />
               </div>
             </NuxtLink>
             
-            <div class="video-info">
-              <h3>
-                <NuxtLink :to="`/video/${video.customId || video.id}`" style="color: inherit; text-decoration: none;">{{ video.title }}</NuxtLink>
+            <div class="p-3.5">
+              <h3 class="mb-2 overflow-hidden text-sm font-semibold whitespace-nowrap text-ellipsis text-[#111]">
+                <NuxtLink :to="`/video/${video.customId || video.id}`" class="text-inherit no-underline">{{ video.title }}</NuxtLink>
               </h3>
               
               <NuxtLink 
                 :to="`/user/${video.userId}`" 
-                style="display: flex; align-items: center; gap: 8px; margin: 8px 0; text-decoration: none;"
+                class="my-2 flex items-center gap-2 no-underline"
               >
-                <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username || 'U'}`" loading="lazy" decoding="async" style="width: 22px; height: 22px; border-radius: 50%;" />
-                <span style="font-size: 13px; color: #444; font-weight: 600;">{{ video.user?.username || 'Utilisateur' }}</span>
+                <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username || 'U'}`" loading="lazy" decoding="async" class="size-[22px] rounded-full" />
+                <span class="text-[13px] font-semibold text-[#444]">{{ video.user?.username || 'Utilisateur' }}</span>
               </NuxtLink>
 
-              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted);">
-                <span style="color: var(--neon-purple); font-weight: 600;">{{ video.category || 'Divertissement' }}</span>
+              <div class="flex items-center justify-between text-xs text-muted">
+                <span class="font-semibold text-brand">{{ video.category || 'Divertissement' }}</span>
                 <span>👁 {{ video.views || 0 }} vues</span>
               </div>
             </div>
@@ -57,31 +56,31 @@
       </div>
 
       <!-- COLONNE DROITE : SIDEBAR DISCRÈTE DES ABONNEMENTS -->
-      <div v-if="token" class="subscriptions-sidebar">
-        <div style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.02); position: sticky; top: 90px;">
-          <h3 style="margin: 0 0 14px 0; font-size: 15px; color: #111; display: flex; align-items: center; justify-content: space-between;">
+      <div v-if="token" class="w-[280px] shrink-0 max-lg:w-full">
+        <div class="sticky top-[90px] rounded-[14px] border border-line bg-white p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)]">
+          <h3 class="mb-3.5 flex items-center justify-between text-[15px] text-[#111]">
             <span>📺 Mes Abonnements</span>
-            <span style="font-size: 11px; background: rgba(138, 43, 226, 0.1); color: var(--neon-purple); padding: 2px 8px; border-radius: 10px;">
+            <span class="rounded-[10px] bg-brand/10 px-2 py-0.5 text-[11px] text-brand">
               {{ subscriptions.length }}
             </span>
           </h3>
 
-          <div v-if="subscriptions.length === 0" style="font-size: 13px; color: #777; text-align: center; padding: 20px 0;">
+          <div v-if="subscriptions.length === 0" class="py-5 text-center text-[13px] text-[#777]">
             Vous ne suivez aucune chaîne pour le moment.
           </div>
 
-          <div v-else style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+          <div v-else class="flex max-h-[400px] flex-col gap-2.5 overflow-y-auto">
             <NuxtLink 
               v-for="sub in subscriptions" 
               :key="sub.id" 
               :to="`/user/${sub.id}`"
-              class="sub-item"
+              class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 no-underline transition-colors hover:bg-surface"
             >
-              <img :src="sub.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${sub.username}`" loading="lazy" decoding="async" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
-              <span style="font-size: 13px; font-weight: 600; color: #333; flex: 1; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+              <img :src="sub.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${sub.username}`" loading="lazy" decoding="async" class="size-8 rounded-full object-cover" />
+              <span class="flex-1 overflow-hidden text-[13px] font-semibold whitespace-nowrap text-ellipsis text-[#333]">
                 {{ sub.username }}
               </span>
-              <span style="font-size: 11px; color: var(--neon-purple); font-weight: 500;">Voir</span>
+              <span class="text-[11px] font-medium text-brand">Voir</span>
             </NuxtLink>
           </div>
         </div>
@@ -92,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { PublicUser, Video } from '#shared/types/models'
@@ -100,29 +99,26 @@ import type { PublicUser, Video } from '#shared/types/models'
 const route = useRoute()
 const { token } = useAuth()
 const subscriptions = ref<PublicUser[]>([])
-const videos = ref<Video[]>([])
-const pending = ref(true)
+const isMature = computed(() => route.query.mature === '1')
 
-const fetchVideos = async () => {
-  pending.value = true
-  try {
-    const isMature = route.query.mature === '1'
-    const headers = token.value ? { Authorization: `Bearer ${token.value}` } : undefined
-    const url = isMature ? '/api/videos?is18Plus=true' : '/api/videos'
-    videos.value = await $fetch<Video[]>(url, { headers })
-  } catch (err) {
-    console.error(err)
-  } finally {
-    pending.value = false
-  }
-}
+const { data: videoData, pending, refresh: refreshVideos } = await useAsyncData<Video[]>(
+  'home-videos',
+  async () => {
+    if (isMature.value && !token.value) return []
+    return $fetch<Video[]>(isMature.value ? '/api/videos?is18Plus=true' : '/api/videos', {
+      headers: token.value ? { Authorization: `Bearer ${token.value}` } : undefined
+    })
+  },
+  { watch: [isMature] }
+)
 
-watch(() => route.query.mature, () => {
-  fetchVideos()
-})
+const videos = computed(() => videoData.value ?? [])
 
 const fetchSubscriptions = async () => {
-  if (!token.value) return
+  if (!token.value) {
+    subscriptions.value = []
+    return
+  }
   try {
     subscriptions.value = await $fetch<PublicUser[]>('/api/users/subscriptions', {
       headers: { 'Authorization': `Bearer ${token.value}` }
@@ -132,44 +128,8 @@ const fetchSubscriptions = async () => {
   }
 }
 
-onMounted(() => {
-  fetchVideos()
-  fetchSubscriptions()
-})
+watch(token, () => {
+  void refreshVideos()
+  void fetchSubscriptions()
+}, { immediate: true })
 </script>
-
-<style scoped>
-.home-layout {
-  display: flex;
-  gap: 25px;
-  align-items: flex-start;
-}
-
-.subscriptions-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-}
-
-@media (max-width: 992px) {
-  .home-layout {
-    flex-direction: column;
-  }
-  .subscriptions-sidebar {
-    width: 100%;
-  }
-}
-
-.sub-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-
-.sub-item:hover {
-  background: #f8f9fa;
-}
-</style>

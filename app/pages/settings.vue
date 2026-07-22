@@ -1,53 +1,53 @@
 <template>
-  <div class="settings-wrapper">
-    <div class="settings-header">
+  <div class="mx-auto my-10 max-w-[800px] px-5">
+    <div class="mb-[25px] flex items-center justify-between">
       <div>
-        <h1 class="settings-title">Modifier le Profil</h1>
-        <p class="settings-subtitle">Mettez à jour vos informations personnelles et votre avatar.</p>
+        <h1 class="m-0 text-[26px] text-[#111]">Modifier le Profil</h1>
+        <p class="mt-[5px] text-sm text-(--text-muted)">Mettez à jour vos informations personnelles et votre avatar.</p>
       </div>
-      <NuxtLink to="/channel" class="back-link">&larr; Retour à mon profil</NuxtLink>
+      <NuxtLink to="/channel" class="text-sm text-(--text-muted) no-underline">&larr; Retour à mon profil</NuxtLink>
     </div>
 
-    <div v-if="loading" class="loading-state">
+    <div v-if="loading" class="p-10 text-center text-(--neon-purple)">
       Chargement de vos paramètres...
     </div>
 
-    <div v-else class="settings-card">
+    <div v-else class="rounded-2xl border border-[#e2e8f0] bg-white p-[30px] shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
       
       <!-- AVATAR SELECTION MODULE & PREVIEW BEFORE CONFIRMATION -->
-      <div class="avatar-section">
-        <label class="form-label">Photo de profil (Avatar)</label>
+      <div class="mb-[30px] border-b border-[#e2e8f0] pb-[25px]">
+        <label class="mb-[6px] block text-sm font-semibold text-[#333]">Photo de profil (Avatar)</label>
         
-        <div class="avatar-row">
-          <div class="avatar-preview-box">
+        <div class="flex flex-wrap items-center gap-[25px]">
+          <div class="relative">
             <img 
               :src="avatarUrl" 
               loading="lazy"
               decoding="async"
-              class="profile-avatar-preview" 
+              class="size-[100px] rounded-full border-[3px] border-(--neon-purple) object-cover shadow-[0_4px_12px_rgba(0,0,0,0.1)]" 
             />
             
             <label 
               for="avatar-file-input" 
-              class="avatar-overlay-label"
+              class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white opacity-0 transition-opacity duration-200 hover:opacity-100"
             >
               📷 Changer
             </label>
-            <input id="avatar-file-input" type="file" accept="image/*" class="hidden-input" @change="handleLocalAvatarUpload" />
+            <input id="avatar-file-input" type="file" accept="image/*" class="hidden" @change="handleLocalAvatarUpload" />
           </div>
 
-          <div class="avatar-controls">
-            <div class="avatar-option">
-              <span class="option-title">Option 1: Importer depuis votre ordinateur</span>
-              <input type="file" accept="image/*" @change="handleLocalAvatarUpload" class="file-input-sm" />
+          <div class="min-w-[250px] flex-1">
+            <div class="mb-3">
+              <span class="mb-1 block text-[13px] font-semibold text-[#333]">Option 1: Importer depuis votre ordinateur</span>
+              <input type="file" accept="image/*" @change="handleLocalAvatarUpload" class="text-xs" />
             </div>
 
-            <div class="avatar-option">
-              <span class="option-title">Option 2: URL de l'image</span>
-              <input type="text" v-model="form.avatar" placeholder="https://..." class="full-input-sm" />
+            <div class="mb-3">
+              <span class="mb-1 block text-[13px] font-semibold text-[#333]">Option 2: URL de l'image</span>
+              <input type="text" v-model="form.avatar" placeholder="https://..." class="w-full text-[13px]" />
             </div>
             
-            <span v-if="avatarPreviewTemp" class="preview-warning">
+            <span v-if="avatarPreviewTemp" class="mt-2 block text-[11px] font-bold text-[#d97706]">
               ⚠️ Prévisualisation (Modifications non enregistrées)
             </span>
           </div>
@@ -55,34 +55,34 @@
       </div>
 
       <!-- FORMULAIRE DES INFORMATIONS -->
-      <form @submit.prevent="updateProfile" class="profile-form">
+      <form @submit.prevent="updateProfile" class="flex flex-col gap-5">
         
         <div>
-          <label class="form-label">Nom d'utilisateur</label>
-          <input type="text" v-model="form.username" required class="full-input" />
+          <label class="mb-[6px] block text-sm font-semibold text-[#333]">Nom d'utilisateur</label>
+          <input type="text" v-model="form.username" required class="w-full" />
         </div>
 
         <div>
-          <label class="form-label">Adresse Email (Non modifiable)</label>
-          <input type="email" :value="form.email" disabled class="full-input disabled-input" />
+          <label class="mb-[6px] block text-sm font-semibold text-[#333]">Adresse Email (Non modifiable)</label>
+          <input type="email" :value="form.email" disabled class="w-full cursor-not-allowed bg-[#f1f5f9] text-[#64748b]" />
         </div>
 
         <div>
-          <label class="form-label">Biographie / Description de la chaîne</label>
-          <textarea v-model="form.bio" rows="4" placeholder="Présentez-vous à votre audience..." class="full-textarea"></textarea>
+          <label class="mb-[6px] block text-sm font-semibold text-[#333]">Biographie / Description de la chaîne</label>
+          <textarea v-model="form.bio" rows="4" placeholder="Présentez-vous à votre audience..." class="w-full resize-y"></textarea>
         </div>
 
         <div>
-          <label class="form-label">Date de naissance (Strictement privée 🔒)</label>
-          <input type="date" v-model="form.birthdate" class="full-input" />
-          <span class="privacy-note">
+          <label class="mb-[6px] block text-sm font-semibold text-[#333]">Date de naissance (Strictement privée 🔒)</label>
+          <input type="date" v-model="form.birthdate" class="w-full" />
+          <span class="mt-1 block text-[11px] text-[#666]">
             Votre âge est utilisé uniquement pour débloquer l'accès au catalogue mature (+18). Cette information n'est jamais publiée sur votre profil.
           </span>
         </div>
 
-        <div class="form-actions">
-          <NuxtLink to="/channel" class="neon-btn cancel-btn">Annuler</NuxtLink>
-          <button type="submit" class="neon-btn neon-btn-pink submit-btn" :disabled="saving">
+        <div class="mt-2.5 flex justify-end gap-3">
+          <NuxtLink to="/channel" class="inline-flex items-center justify-center rounded-md border border-(--neon-purple) px-[18px] py-2.5 text-sm text-(--neon-purple) no-underline shadow-[0_0_4px_rgba(138,43,226,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-(--neon-purple) hover:text-white hover:shadow-[0_4px_12px_rgba(138,43,226,0.3)]">Annuler</NuxtLink>
+          <button type="submit" class="inline-flex items-center justify-center rounded-md border border-(--neon-pink) px-6 py-2.5 text-sm text-(--neon-pink) shadow-[0_0_4px_rgba(255,20,147,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-(--neon-pink) hover:text-white hover:shadow-[0_4px_12px_rgba(255,20,147,0.3)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55" :disabled="saving">
             {{ saving ? 'Enregistrement...' : 'Confirmer / Enregistrer les modifications' }}
           </button>
         </div>
@@ -94,12 +94,14 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { AuthUser } from '#shared/types/models'
 
-const { token, isAuthenticated, setUser } = useAuth()
+const { token, setUser } = useAuth()
 const router = useRouter()
 
 const loading = ref(true)
@@ -142,10 +144,6 @@ const fetchProfile = async () => {
 }
 
 onMounted(() => {
-  if (!isAuthenticated()) {
-    router.push('/login')
-    return
-  }
   fetchProfile()
 })
 
@@ -202,187 +200,3 @@ const updateProfile = async () => {
 }
 </script>
 
-<style scoped>
-.settings-wrapper {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
-
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.settings-title {
-  margin: 0;
-  font-size: 26px;
-  color: #111111;
-}
-
-.settings-subtitle {
-  margin: 5px 0 0 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-.back-link {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.loading-state {
-  text-align: center;
-  color: var(--neon-purple);
-  padding: 40px;
-}
-
-.settings-card {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-}
-
-.avatar-section {
-  margin-bottom: 30px;
-  padding-bottom: 25px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.form-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #333333;
-}
-
-.avatar-row {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  flex-wrap: wrap;
-}
-
-.avatar-preview-box {
-  position: relative;
-}
-
-.avatar-controls {
-  flex: 1;
-  min-width: 250px;
-}
-
-.avatar-option {
-  margin-bottom: 12px;
-}
-
-.option-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #333333;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.file-input-sm {
-  font-size: 12px;
-}
-
-.full-input-sm {
-  width: 100%;
-  font-size: 13px;
-}
-
-.preview-warning {
-  font-size: 11px;
-  color: #d97706;
-  font-weight: bold;
-  margin-top: 8px;
-  display: block;
-}
-
-.profile-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.full-input {
-  width: 100%;
-}
-
-.disabled-input {
-  background: #f1f5f9;
-  color: #64748b;
-  cursor: not-allowed;
-}
-
-.full-textarea {
-  width: 100%;
-  resize: vertical;
-}
-
-.privacy-note {
-  font-size: 11px;
-  color: #666666;
-  margin-top: 4px;
-  display: block;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.cancel-btn {
-  text-decoration: none;
-  padding: 10px 18px;
-  font-size: 14px;
-}
-
-.submit-btn {
-  padding: 10px 24px;
-  font-size: 14px;
-}
-
-.profile-avatar-preview {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid var(--neon-purple);
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.avatar-overlay-label {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  opacity: 0;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.avatar-overlay-label:hover {
-  opacity: 1;
-}
-
-.hidden-input {
-  display: none;
-}
-</style>

@@ -55,13 +55,14 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'auth' })
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { UserComment } from '#shared/types/models'
 
-const { token, isAuthenticated, logout } = useAuth()
-const router = useRouter()
+const { token, logout } = useAuth()
 
 const comments = ref<UserComment[]>([])
 const loading = ref(true)
@@ -81,10 +82,6 @@ const fetchMyComments = async () => {
 }
 
 onMounted(() => {
-  if (!isAuthenticated()) {
-    router.push('/login')
-    return
-  }
   fetchMyComments()
 })
 
