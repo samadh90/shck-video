@@ -2,9 +2,11 @@ import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq, and, or, sql } from 'drizzle-orm'
 import { requireAuthUser } from '~~/server/utils/auth'
+import { enforceRateLimit } from '~~/server/utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireAuthUser(event)
+  enforceRateLimit(event, { name: 'video:like', limit: 30, windowMs: 60 * 1000, userId: currentUser.id })
   const idOrCustomId = getRouterParam(event, 'id') || ''
 
   const numericId = parseInt(idOrCustomId, 10)
@@ -18,7 +20,7 @@ export default defineEventHandler(async (event) => {
   if (!videoCheck.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Vidéo introuvable.'
+      message: 'Vidéo introuvable.'
     })
   }
 
@@ -29,7 +31,7 @@ export default defineEventHandler(async (event) => {
   if (typeof isLike !== 'boolean') {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Le champ isLike (boolean) est requis.'
+      message: 'Le champ isLike (boolean) est requis.'
     })
   }
 

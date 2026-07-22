@@ -86,10 +86,7 @@ definePageMeta({ middleware: 'auth' })
 
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '~/composables/useAuth'
 import type { Video } from '#shared/types/models'
-
-const { token } = useAuth()
 
 const videos = ref<Video[]>([])
 const loading = ref(true)
@@ -108,9 +105,7 @@ const filteredVideos = computed(() => {
 const fetchMyVideos = async () => {
   loading.value = true
   try {
-    const data = await $fetch<Video[]>('/api/users/my-videos', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const data = await $fetch<Video[]>('/api/users/my-videos')
     videos.value = data
   } catch (err) {
     console.error(err)
@@ -126,10 +121,7 @@ onMounted(() => {
 const confirmDelete = async (id: number) => {
   if (!confirm('Supprimer définitivement cette vidéo ?')) return
   try {
-    await $fetch(`/api/videos/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    await $fetch(`/api/videos/${id}`, { method: 'DELETE' })
     fetchMyVideos()
   } catch (error: unknown) {
     alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')

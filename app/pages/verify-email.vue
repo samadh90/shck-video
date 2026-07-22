@@ -4,7 +4,7 @@
     <p v-if="pending">Vérification du lien en cours…</p>
     <template v-else>
       <p>{{ message }}</p>
-      <NuxtLink to="/login" class="neon-btn">Se connecter</NuxtLink>
+      <NuxtLink to="/login" class="inline-block rounded-md bg-brand px-4 py-2 font-semibold text-white no-underline">Se connecter</NuxtLink>
     </template>
   </main>
 </template>

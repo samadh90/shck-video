@@ -1,15 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#fcfcfc]">
-    <!-- Navbar -->
-    <nav class="flex items-center justify-between border-b border-line bg-white px-5 py-4">
-      <NuxtLink to="/" class="text-xl font-black text-ink no-underline">SHCK<span class="text-accent">Video</span></NuxtLink>
-      <div class="flex items-center gap-4">
-        <NuxtLink to="/channel" class="text-sm text-ink no-underline">Ma Chaîne</NuxtLink>
-        <NuxtLink to="/settings" class="text-sm text-ink no-underline">Paramètres</NuxtLink>
-        <button @click="logout" class="rounded-md bg-accent px-4 py-2 font-semibold text-white">Déconnexion</button>
-      </div>
-    </nav>
-
     <div class="mx-auto my-8 max-w-4xl px-5">
       <h1 class="mb-1 text-[26px] text-[#111]">Gestion de mes Commentaires</h1>
       <p class="mb-6 text-sm text-muted">Consultez et gérez l'ensemble de vos commentaires publiés.</p>
@@ -57,11 +47,9 @@
 definePageMeta({ middleware: 'auth' })
 
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { UserComment } from '#shared/types/models'
 
-const { token, logout } = useAuth()
 
 const comments = ref<UserComment[]>([])
 const loading = ref(true)
@@ -69,9 +57,7 @@ const loading = ref(true)
 const fetchMyComments = async () => {
   loading.value = true
   try {
-    const data = await $fetch<UserComment[]>('/api/users/my-comments', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const data = await $fetch<UserComment[]>('/api/users/my-comments')
     comments.value = data
   } catch (err) {
     console.error(err)
@@ -87,10 +73,7 @@ onMounted(() => {
 const deleteComment = async (id: number) => {
   if (!confirm('Supprimer ce commentaire ?')) return
   try {
-    await $fetch(`/api/comments/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    await $fetch(`/api/comments/${id}`, { method: 'DELETE' })
     fetchMyComments()
   } catch (error: unknown) {
     alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')

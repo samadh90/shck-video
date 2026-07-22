@@ -2,13 +2,16 @@ import { createError, defineEventHandler, getQuery } from 'h3'
 import { and, eq } from 'drizzle-orm'
 import { db, schema } from '~~/server/utils/db'
 import { hashEmailVerificationToken } from '~~/server/utils/auth'
+import { enforceRateLimit } from '~~/server/utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, { name: 'auth:verify-email', limit: 10, windowMs: 60 * 60 * 1000 })
+
   const query = getQuery(event)
   const token = typeof query.token === 'string' ? query.token : ''
 
   if (!token) {
-    throw createError({ statusCode: 400, statusMessage: 'Jeton de vérification manquant.' })
+    throw createError({ statusCode: 400, message: 'Jeton de vérification manquant.' })
   }
 
   const tokenHash = hashEmailVerificationToken(token)
@@ -18,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const user = users[0]
 
   if (!user || !user.verificationTokenExpiresAt || new Date(user.verificationTokenExpiresAt).getTime() <= Date.now()) {
-    throw createError({ statusCode: 400, statusMessage: 'Ce lien de vérification est invalide ou expiré.' })
+    throw createError({ statusCode: 400, message: 'Ce lien de vérification est invalide ou expiré.' })
   }
 
   const [updatedUser] = await db.update(schema.users)
@@ -35,7 +38,7 @@ export default defineEventHandler(async (event) => {
     .returning()
 
   if (!updatedUser) {
-    throw createError({ statusCode: 400, statusMessage: 'Ce lien de vérification a déjà été utilisé.' })
+    throw createError({ statusCode: 400, message: 'Ce lien de vérification a déjà été utilisé.' })
   }
 
   return { success: true, message: 'Votre adresse e-mail a été vérifiée.' }

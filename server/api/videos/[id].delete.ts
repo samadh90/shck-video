@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   if (!videoCheck.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Vidéo introuvable.'
+      message: 'Vidéo introuvable.'
     })
   }
 
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   if (video.userId !== currentUser.id) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Vous n\'êtes pas autorisé à supprimer cette vidéo.'
+      message: 'Vous n\'êtes pas autorisé à supprimer cette vidéo.'
     })
   }
 

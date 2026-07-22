@@ -56,7 +56,7 @@
       </div>
 
       <!-- COLONNE DROITE : SIDEBAR DISCRÈTE DES ABONNEMENTS -->
-      <div v-if="token" class="w-[280px] shrink-0 max-lg:w-full">
+      <div v-if="isAuthenticated" class="w-[280px] shrink-0 max-lg:w-full">
         <div class="sticky top-[90px] rounded-[14px] border border-line bg-white p-5 shadow-[0_4px_16px_rgba(0,0,0,0.02)]">
           <h3 class="mb-3.5 flex items-center justify-between text-[15px] text-[#111]">
             <span>📺 Mes Abonnements</span>
@@ -91,45 +91,61 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { PublicUser, Video } from '#shared/types/models'
 
 const route = useRoute()
-const { token } = useAuth()
+const { isAuthenticated, logout } = useAuth()
 const subscriptions = ref<PublicUser[]>([])
 const isMature = computed(() => route.query.mature === '1')
 
-const { data: videoData, pending, refresh: refreshVideos } = await useAsyncData<Video[]>(
+const { data: videoData, pending } = await useAsyncData<Video[]>(
   'home-videos',
   async () => {
-    if (isMature.value && !token.value) return []
-    return $fetch<Video[]>(isMature.value ? '/api/videos?is18Plus=true' : '/api/videos', {
-      headers: token.value ? { Authorization: `Bearer ${token.value}` } : undefined
-    })
+    if (isMature.value && !isAuthenticated.value) return []
+    return await $fetch<Video[]>(isMature.value ? '/api/videos?is18Plus=true' : '/api/videos')
   },
-  { watch: [isMature] }
+  { watch: [isMature, isAuthenticated], default: () => [] }
 )
 
 const videos = computed(() => videoData.value ?? [])
 
 const fetchSubscriptions = async () => {
-  if (!token.value) {
+  if (!isAuthenticated.value) {
     subscriptions.value = []
     return
   }
   try {
-    subscriptions.value = await $fetch<PublicUser[]>('/api/users/subscriptions', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
-  } catch (err) {
+    subscriptions.value = await $fetch<PublicUser[]>('/api/users/subscriptions')
+  } catch (err: unknown) {
+    subscriptions.value = []
+
+    // A stale/expired token should end the local session rather than keep
+    // retrying an authenticated request on every homepage render.
+    const status = (err as { status?: number; statusCode?: number; response?: { status?: number } })?.status
+      ?? (err as { statusCode?: number })?.statusCode
+      ?? (err as { response?: { status?: number } })?.response?.status
+    if (status === 401) {
+      logout()
+      return
+    }
+
     console.error(err)
   }
 }
 
-watch(token, () => {
-  void refreshVideos()
-  void fetchSubscriptions()
-}, { immediate: true })
+watch(isAuthenticated, (authenticated) => {
+  if (!import.meta.client) return
+  if (authenticated) {
+    void fetchSubscriptions()
+  } else {
+    subscriptions.value = []
+  }
+})
+
+onMounted(() => {
+  if (isAuthenticated.value) void fetchSubscriptions()
+})
 </script>

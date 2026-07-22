@@ -7,6 +7,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
+    // Private server-only setting. At runtime, prefer NUXT_JWT_SECRET.
+    jwtSecret: process.env.NUXT_JWT_SECRET || process.env.JWT_SECRET || '',
     email: {
       smtpHost: process.env.SMTP_HOST || '',
       smtpPort: process.env.SMTP_PORT || '587',

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Fichier non trouvé.'
+      message: 'Fichier non trouvé.'
     })
   }
 

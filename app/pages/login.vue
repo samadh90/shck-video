@@ -35,22 +35,26 @@ const login = async () => {
   errorMsg.value = ''
   
   try {
-    const res = await $fetch<{ success: boolean, token?: string, user?: AuthUser }>('/api/auth/login', {
+    const res = await $fetch<{ success: boolean, user?: AuthUser, message?: string }>('/api/auth/login', {
       method: 'POST',
       body: { email: email.value, password: password.value }
     })
     
-    if (!res?.success || !res.token || !res.user) throw new Error('Reponse de connexion invalide.')
+    if (!res?.success || !res.user) {
+      errorMsg.value = res?.message || 'La connexion a échoué. Réessayez.'
+      return
+    }
 
     if (res.success) {
-      setAuth(res.token, res.user)
+      setAuth(res.user)
       const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
         ? route.query.redirect
         : '/'
       router.push(redirect)
     }
   } catch (error: unknown) {
-    errorMsg.value = error instanceof Error ? error.message : 'Identifiants incorrects.'
+    const serverMessage = (error as { data?: { message?: string } })?.data?.message
+    errorMsg.value = serverMessage || 'Un problème est survenu. Réessayez dans un instant.'
   } finally {
     loading.value = false
   }

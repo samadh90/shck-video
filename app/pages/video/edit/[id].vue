@@ -111,7 +111,7 @@
                 <span>{{ progress }}%</span>
               </div>
               <div class="h-2.5 w-full overflow-hidden rounded-[5px] bg-[#e2e8f0]">
-                <div :style="{ width: `${progress}%` }" class="h-full bg-linear-to-r from-(--neon-purple) to-(--neon-pink) transition-[width] duration-200 ease-out"></div>
+                <div :style="{ width: `${progress}%` }" class="h-full bg-linear-to-r from-brand to-accent transition-[width] duration-200 ease-out"></div>
               </div>
             </div>
 
@@ -202,7 +202,7 @@ import type { VideoDetails } from '#shared/types/models'
 
 const route = useRoute()
 const router = useRouter()
-const { token, user } = useAuth()
+const { user } = useAuth()
 
 const videoId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 
@@ -234,9 +234,7 @@ const fetchVideoData = async () => {
   loading.value = true
   errorMsg.value = ''
   try {
-    const data = await $fetch<VideoDetails>(`/api/videos/${videoId.value}`, {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const data = await $fetch<VideoDetails>(`/api/videos/${videoId.value}`)
 
     if (user.value && data.userId !== user.value.id) {
       errorMsg.value = "Vous n'êtes pas le propriétaire de cette vidéo."
@@ -348,7 +346,6 @@ const saveVideo = async () => {
   }
 
   xhr.open('PUT', `/api/videos/${videoId.value}`, true)
-  xhr.setRequestHeader('Authorization', `Bearer ${token.value}`)
   xhr.send(formData)
 }
 </script>

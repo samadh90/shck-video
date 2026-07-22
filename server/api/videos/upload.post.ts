@@ -1,18 +1,36 @@
-import { defineEventHandler, createError, readMultipartFormData } from 'h3'
+import { defineEventHandler, createError, readMultipartFormData, type MultiPartData } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { requireVerifiedUser, generateNanoId } from '~~/server/utils/auth'
-import fs from 'fs'
-import path from 'path'
+import {
+  assertUploadRequestSize,
+  MAX_THUMBNAIL_SIZE_BYTES,
+  MAX_VIDEO_SIZE_BYTES,
+  removeUpload,
+  saveUpload,
+  validateThumbnailFile,
+  validateVideoFile
+} from '~~/server/utils/uploads'
+import path from 'node:path'
+
+const CATEGORIES = new Set(['Divertissement', 'Gaming', 'Musique', 'Tutoriel', 'Sport', 'Vlog', 'Technologie', 'Autre'])
+const VISIBILITIES = new Set(['PUBLIC', 'UNLISTED', 'PRIVATE'])
+const MAX_TITLE_LENGTH = 200
+const MAX_DESCRIPTION_LENGTH = 10_000
+
+function getTextPart(part: MultiPartData) {
+  if (part.filename) {
+    throw createError({ statusCode: 400, message: 'Les champs texte ne peuvent pas contenir de fichier.' })
+  }
+  return part.data.toString('utf-8').trim()
+}
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireVerifiedUser(event)
+  assertUploadRequestSize(event)
   const formData = await readMultipartFormData(event)
 
-  if (!formData || !formData.length) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Aucun fichier transmis.'
-    })
+  if (!formData?.length) {
+    throw createError({ statusCode: 400, message: 'Aucun fichier transmis.' })
   }
 
   let title = ''
@@ -20,64 +38,84 @@ export default defineEventHandler(async (event) => {
   let category = 'Divertissement'
   let visibility = 'PUBLIC'
   let is18Plus = false
-  let videoFilename = ''
-  let thumbnailFilename: string | null = null
-
-  const videosDir = path.resolve(process.cwd(), 'public/uploads/videos')
-  const thumbsDir = path.resolve(process.cwd(), 'public/uploads/thumbnails')
-
-  if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true })
-  if (!fs.existsSync(thumbsDir)) fs.mkdirSync(thumbsDir, { recursive: true })
+  let videoPart: MultiPartData | undefined
+  let thumbnailPart: MultiPartData | undefined
 
   for (const part of formData) {
-    if (part.name === 'title') {
-      title = part.data.toString('utf-8')
-    } else if (part.name === 'description') {
-      description = part.data.toString('utf-8')
-    } else if (part.name === 'category') {
-      category = part.data.toString('utf-8')
-    } else if (part.name === 'visibility') {
-      visibility = part.data.toString('utf-8')
-    } else if (part.name === 'is18Plus') {
-      is18Plus = part.data.toString('utf-8') === 'true'
-    } else if (part.name === 'video' && part.filename) {
-      const ext = path.extname(part.filename) || '.mp4'
-      const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9) + ext
-      const destPath = path.join(videosDir, uniqueName)
-      fs.writeFileSync(destPath, part.data)
-      videoFilename = uniqueName
-    } else if (part.name === 'thumbnail' && part.filename) {
-      const ext = path.extname(part.filename) || '.jpg'
-      const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9) + ext
-      const destPath = path.join(thumbsDir, uniqueName)
-      fs.writeFileSync(destPath, part.data)
-      thumbnailFilename = uniqueName
+    switch (part.name) {
+      case 'title':
+        title = getTextPart(part)
+        break
+      case 'description':
+        description = getTextPart(part)
+        break
+      case 'category':
+        category = getTextPart(part)
+        break
+      case 'visibility':
+        visibility = getTextPart(part)
+        break
+      case 'is18Plus': {
+        const value = getTextPart(part)
+        if (value !== 'true' && value !== 'false') {
+          throw createError({ statusCode: 400, message: 'La valeur du contenu +18 est invalide.' })
+        }
+        is18Plus = value === 'true'
+        break
+      }
+      case 'video':
+        if (videoPart || !part.filename) throw createError({ statusCode: 400, message: 'Un seul fichier vidéo est autorisé.' })
+        videoPart = part
+        break
+      case 'thumbnail':
+        if (thumbnailPart || !part.filename) throw createError({ statusCode: 400, message: 'Une seule miniature est autorisée.' })
+        thumbnailPart = part
+        break
+      default:
+        throw createError({ statusCode: 400, message: 'Champ de formulaire non autorisé.' })
     }
   }
 
-  if (!title || !videoFilename) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Le titre et le fichier vidéo sont obligatoires.'
-    })
+  if (!title || title.length > MAX_TITLE_LENGTH || !videoPart) {
+    throw createError({ statusCode: 400, message: 'Le titre et le fichier vidéo sont obligatoires.' })
+  }
+  if (description.length > MAX_DESCRIPTION_LENGTH || !CATEGORIES.has(category) || !VISIBILITIES.has(visibility)) {
+    throw createError({ statusCode: 400, message: 'Les informations de la vidéo sont invalides.' })
   }
 
-  const customId = generateNanoId(9)
+  const videoExtension = validateVideoFile(videoPart)
+  const thumbnailExtension = thumbnailPart ? validateThumbnailFile(thumbnailPart) : null
+  if (videoPart.data.length + (thumbnailPart?.data.length ?? 0) > MAX_VIDEO_SIZE_BYTES + MAX_THUMBNAIL_SIZE_BYTES) {
+    throw createError({ statusCode: 413, message: 'Les fichiers dépassent la taille maximale autorisée.' })
+  }
 
-  const [newVideo] = await db.insert(schema.videos).values({
-    customId,
-    title,
-    description,
-    filename: videoFilename,
-    thumbnail: thumbnailFilename,
-    category,
-    visibility,
-    is18Plus,
-    userId: currentUser.id
-  }).returning()
+  const videosDir = path.resolve(process.cwd(), 'public/uploads/videos')
+  const thumbsDir = path.resolve(process.cwd(), 'public/uploads/thumbnails')
+  const writtenFiles: string[] = []
 
-  return {
-    message: 'Vidéo téléversée avec succès !',
-    video: newVideo
+  try {
+    const savedVideo = await saveUpload(videosDir, videoPart.data, videoExtension)
+    writtenFiles.push(savedVideo.destination)
+    const savedThumbnail = thumbnailPart && thumbnailExtension
+      ? await saveUpload(thumbsDir, thumbnailPart.data, thumbnailExtension)
+      : null
+    if (savedThumbnail) writtenFiles.push(savedThumbnail.destination)
+
+    const [newVideo] = await db.insert(schema.videos).values({
+      customId: generateNanoId(9),
+      title,
+      description,
+      filename: savedVideo.filename,
+      thumbnail: savedThumbnail?.filename ?? null,
+      category,
+      visibility,
+      is18Plus,
+      userId: currentUser.id
+    }).returning()
+
+    return { message: 'Vidéo téléversée avec succès !', video: newVideo }
+  } catch (error) {
+    await Promise.allSettled(writtenFiles.map(removeUpload))
+    throw error
   }
 })

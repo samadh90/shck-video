@@ -2,23 +2,25 @@ import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq, and, sql } from 'drizzle-orm'
 import { requireAuthUser } from '~~/server/utils/auth'
+import { enforceRateLimit } from '~~/server/utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireAuthUser(event)
+  enforceRateLimit(event, { name: 'user:rate', limit: 10, windowMs: 60 * 1000, userId: currentUser.id })
   const paramId = getRouterParam(event, 'id')
   const targetUserId = parseInt(paramId || '', 10)
 
   if (!targetUserId || isNaN(targetUserId)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID utilisateur invalide.'
+      message: 'ID utilisateur invalide.'
     })
   }
 
   if (currentUser.id === targetUserId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Vous ne pouvez pas noter votre propre profil.'
+      message: 'Vous ne pouvez pas noter votre propre profil.'
     })
   }
 
@@ -28,7 +30,7 @@ export default defineEventHandler(async (event) => {
   if (isNaN(stars) || stars < 1 || stars > 5) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'La note doit être comprise entre 1 et 5 étoiles.'
+      message: 'La note doit être comprise entre 1 et 5 étoiles.'
     })
   }
 

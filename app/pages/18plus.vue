@@ -86,7 +86,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { Video } from '#shared/types/models'
 
-const { token, user } = useAuth()
+const { user } = useAuth()
 const router = useRouter()
 
 const videos = ref<Video[]>([])
@@ -112,9 +112,7 @@ const checkAccessAndFetch = async () => {
   }
 
   try {
-    videos.value = await $fetch<Video[]>('/api/videos?is18Plus=true', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    videos.value = await $fetch<Video[]>('/api/videos?is18Plus=true')
   } catch (err) {
     console.error(err)
   } finally {

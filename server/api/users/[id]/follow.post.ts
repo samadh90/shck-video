@@ -2,23 +2,25 @@ import { defineEventHandler, createError, getRouterParam } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq, and, sql } from 'drizzle-orm'
 import { requireAuthUser } from '~~/server/utils/auth'
+import { enforceRateLimit } from '~~/server/utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireAuthUser(event)
+  enforceRateLimit(event, { name: 'user:follow', limit: 20, windowMs: 60 * 1000, userId: currentUser.id })
   const paramId = getRouterParam(event, 'id')
   const followingId = parseInt(paramId || '', 10)
 
   if (!followingId || isNaN(followingId)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID utilisateur invalide.'
+      message: 'ID utilisateur invalide.'
     })
   }
 
   if (currentUser.id === followingId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Vous ne pouvez pas vous abonner à votre propre chaîne.'
+      message: 'Vous ne pouvez pas vous abonner à votre propre chaîne.'
     })
   }
 

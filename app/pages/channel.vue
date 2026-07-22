@@ -144,7 +144,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import type { PublicUser, UserComment, UserProfile } from '#shared/types/models'
 
-const { token, user } = useAuth()
+const { user } = useAuth()
 
 const isAdult = computed(() => {
   if (!user.value || !user.value.birthdate) return false
@@ -173,19 +173,13 @@ const loadingComments = ref(true)
 
 const loadDashboard = async () => {
   try {
-    const me = await $fetch<UserProfile>('/api/users/me', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const me = await $fetch<UserProfile>('/api/users/me')
     profile.value = me
 
-    const subsData = await $fetch<PublicUser[]>('/api/users/subscriptions', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const subsData = await $fetch<PublicUser[]>('/api/users/subscriptions')
     subscriptions.value = subsData
 
-    const commentsData = await $fetch<UserComment[]>('/api/users/my-comments', {
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const commentsData = await $fetch<UserComment[]>('/api/users/my-comments')
     myComments.value = commentsData
   } catch (err) {
     console.error(err)
@@ -201,10 +195,7 @@ onMounted(() => {
 const deleteComment = async (id: number) => {
   if (!confirm('Supprimer ce commentaire ?')) return
   try {
-    await $fetch(`/api/comments/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    await $fetch(`/api/comments/${id}`, { method: 'DELETE' })
     loadDashboard()
   } catch (error: unknown) {
     alert(error instanceof Error ? error.message : 'Erreur lors de la suppression.')

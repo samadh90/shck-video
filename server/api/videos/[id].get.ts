@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (!idOrCustomId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Identifiant vidéo manquant.'
+      message: 'Identifiant vidéo manquant.'
     })
   }
 
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
   if (!videoList.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Vidéo introuvable.'
+      message: 'Vidéo introuvable.'
     })
   }
 

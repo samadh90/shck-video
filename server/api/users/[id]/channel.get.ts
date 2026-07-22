@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!targetUserId || isNaN(targetUserId)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID utilisateur invalide.'
+      message: 'ID utilisateur invalide.'
     })
   }
 
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   if (!usersList.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Chaîne introuvable.'
+      message: 'Chaîne introuvable.'
     })
   }
 

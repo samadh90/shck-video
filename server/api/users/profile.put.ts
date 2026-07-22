@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     })
     .where(eq(schema.users.id, currentUser.id))
     .returning()
-  if (!updatedUser) throw createError({ statusCode: 404, statusMessage: 'Utilisateur introuvable.' })
+  if (!updatedUser) throw createError({ statusCode: 404, message: 'Utilisateur introuvable.' })
 
   return {
     message: 'Profil mis à jour avec succès.',

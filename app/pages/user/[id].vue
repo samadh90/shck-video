@@ -64,52 +64,51 @@
       </div>
 
       <!-- En-tête & Barre de recherche dédiée sur la chaîne du créateur -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-        <h2 style="font-size: 20px; color: #111; margin: 0;">
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <h2 class="m-0 text-xl text-[#111]">
           Vidéos publiées ({{ filteredVideos.length }})
         </h2>
 
         <!-- Barre de recherche spécifique au créateur -->
-        <div style="position: relative; width: 100%; max-width: 320px;">
+        <div class="relative w-full max-w-xs">
           <input 
             type="text" 
             v-model="channelSearchQuery" 
             placeholder="Rechercher dans cette chaîne..." 
-            style="width: 100%; padding: 9px 14px 9px 36px; border-radius: 20px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; background: #ffffff;"
+            class="w-full rounded-[20px] border border-slate-300 bg-white py-2 pr-3.5 pl-9 text-[13px] outline-none"
           />
-          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #64748b;">🔍</span>
+          <span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-slate-500">🔍</span>
         </div>
       </div>
 
-      <div v-if="filteredVideos.length === 0 && channel.videos?.length > 0" style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <div v-if="filteredVideos.length === 0 && channel.videos?.length > 0" class="rounded-xl border border-line bg-white p-10 text-center text-muted">
         Aucune vidéo de ce créateur ne correspond à "{{ channelSearchQuery }}".
       </div>
 
-      <div v-else-if="channel.videos?.length === 0" style="text-align: center; padding: 40px; color: #777;">
+      <div v-else-if="channel.videos?.length === 0" class="p-10 text-center text-muted">
         Ce créateur n'a pas encore publié de vidéo publique.
       </div>
 
-      <div v-else class="video-grid" style="padding: 0;">
+      <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-5">
         <NuxtLink 
           v-for="video in filteredVideos" 
           :key="video.id"
           :to="`/video/${video.customId || video.id}`" 
-          class="video-card"
-          style="text-decoration: none;"
+          class="overflow-hidden rounded-xl border border-line bg-white text-inherit no-underline shadow-sm"
         >
-          <div class="thumbnail">
+          <div class="aspect-video overflow-hidden bg-surface">
             <img 
               v-if="video.thumbnail" 
               :src="`/uploads/thumbnails/${video.thumbnail}`" 
               loading="lazy"
               decoding="async"
-              style="width: 100%; height: 100%; object-fit: cover;"
+              class="size-full object-cover"
             />
           </div>
-          <div class="video-info">
-            <h3>{{ video.title }}</h3>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); margin-top: 8px;">
-              <span style="color: var(--neon-purple); font-weight: 600;">{{ video.category || 'Divertissement' }}</span>
+          <div class="p-4">
+            <h3 class="m-0 text-base text-ink">{{ video.title }}</h3>
+            <div class="mt-2 flex items-center justify-between text-xs text-muted">
+              <span class="font-semibold text-brand">{{ video.category || 'Divertissement' }}</span>
               <span>👍 {{ video.likesCount }} | 👎 {{ video.dislikesCount }}</span>
             </div>
           </div>
@@ -128,7 +127,7 @@ import type { Channel } from '#shared/types/models'
 
 const route = useRoute()
 const router = useRouter()
-const { token, user } = useAuth()
+const { isAuthenticated, user } = useAuth()
 
 const isFollowing = ref(false)
 const followersCount = ref<number | null>(null)
@@ -140,16 +139,14 @@ const targetUserId = computed(() => parseInt(typeof route.params.id === 'string'
 
 const { data: channelResponse, pending: loading, error, refresh: fetchChannel } = await useAsyncData<{ channel: Channel }>(
   'public-channel',
-  async () => $fetch<{ channel: Channel }>(`/api/users/${targetUserId.value}/channel`, {
-    headers: token.value ? { Authorization: `Bearer ${token.value}` } : undefined
-  }),
+  async () => $fetch<{ channel: Channel }>(`/api/users/${targetUserId.value}/channel`),
   { watch: [targetUserId] }
 )
 
 const channel = computed(() => channelResponse.value?.channel ?? null)
 const errorMsg = computed(() => error.value instanceof Error ? error.value.message : '')
 
-watch(token, () => {
+watch(isAuthenticated, () => {
   void fetchChannel()
 })
 
@@ -180,15 +177,12 @@ watch(channel, (currentChannel) => {
 }, { immediate: true })
 
 const toggleFollow = async () => {
-  if (!token.value) {
+  if (!isAuthenticated.value) {
     router.push('/login')
     return
   }
   try {
-    const res = await $fetch<{ isFollowing: boolean, subscribersCount: number }>(`/api/users/${targetUserId.value}/follow`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token.value}` }
-    })
+    const res = await $fetch<{ isFollowing: boolean, subscribersCount: number }>(`/api/users/${targetUserId.value}/follow`, { method: 'POST' })
     isFollowing.value = res.isFollowing
     if (followersCount.value !== null) {
       followersCount.value = res.subscribersCount
@@ -199,7 +193,7 @@ const toggleFollow = async () => {
 }
 
 const rateChannel = async (stars: number) => {
-  if (!token.value) {
+  if (!isAuthenticated.value) {
     router.push('/login')
     return
   }
@@ -210,7 +204,6 @@ const rateChannel = async (stars: number) => {
   try {
     const res = await $fetch<{ averageRating: number, ratingsCount: number, userRating: number }>(`/api/users/${targetUserId.value}/rate`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token.value}` },
       body: { stars }
     })
     avgRating.value = res.averageRating

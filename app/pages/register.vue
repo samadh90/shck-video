@@ -21,6 +21,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '~/composables/useAuth'
+import type { AuthUser } from '#shared/types/models'
 
 const username = ref('')
 const email = ref('')
@@ -28,13 +30,14 @@ const password = ref('')
 const errorMsg = ref('')
 const loading = ref(false)
 const router = useRouter()
+const { setAuth } = useAuth()
 
 const register = async () => {
   loading.value = true
   errorMsg.value = ''
   
   try {
-    const res = await $fetch<{ success: boolean, developmentVerificationUrl?: string }>('/api/auth/register', {
+    const res = await $fetch<{ success: boolean, user?: AuthUser, developmentVerificationUrl?: string }>('/api/auth/register', {
       method: 'POST',
       body: {
         username: username.value,
@@ -43,9 +46,10 @@ const register = async () => {
       }
     })
     
-    if (!res?.success) throw new Error('La creation du compte a echoue.')
+    if (!res?.success || !res.user) throw new Error('La creation du compte a echoue.')
 
     if (res.success) {
+      setAuth(res.user)
       if (res.developmentVerificationUrl && import.meta.client) {
         window.location.assign(res.developmentVerificationUrl)
         return

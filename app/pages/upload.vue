@@ -81,7 +81,7 @@
               <span>{{ progress }}%</span>
             </div>
             <div class="h-2.5 w-full overflow-hidden rounded-[5px] bg-[#e2e8f0]">
-              <div :style="{ width: `${progress}%` }" class="h-full bg-linear-to-r from-(--neon-purple) to-(--neon-pink) transition-[width] duration-200 ease-out"></div>
+              <div :style="{ width: `${progress}%` }" class="h-full bg-linear-to-r from-brand to-accent transition-[width] duration-200 ease-out"></div>
             </div>
           </div>
 
@@ -161,9 +161,6 @@ definePageMeta({ middleware: 'auth' })
 
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '~/composables/useAuth'
-
-const { token } = useAuth()
 const router = useRouter()
 
 const form = ref({
@@ -301,7 +298,6 @@ const uploadVideo = () => {
   }
 
   xhr.open('POST', '/api/videos/upload', true)
-  xhr.setRequestHeader('Authorization', `Bearer ${token.value}`)
   xhr.send(formData)
 }
 </script>

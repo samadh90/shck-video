@@ -2,9 +2,11 @@ import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import { db, schema } from '~~/server/utils/db'
 import { eq, or } from 'drizzle-orm'
 import { requireVerifiedUser } from '~~/server/utils/auth'
+import { enforceRateLimit } from '~~/server/utils/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const currentUser = await requireVerifiedUser(event)
+  enforceRateLimit(event, { name: 'video:comment', limit: 10, windowMs: 60 * 1000, userId: currentUser.id })
   const idOrCustomId = getRouterParam(event, 'id') || ''
 
   const numericId = parseInt(idOrCustomId, 10)
@@ -18,7 +20,7 @@ export default defineEventHandler(async (event) => {
   if (!videoCheck.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Vidéo introuvable.'
+      message: 'Vidéo introuvable.'
     })
   }
 
@@ -29,7 +31,7 @@ export default defineEventHandler(async (event) => {
   if (!content || !content.trim()) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Le commentaire ne peut pas être vide.'
+      message: 'Le commentaire ne peut pas être vide.'
     })
   }
 
@@ -39,7 +41,7 @@ export default defineEventHandler(async (event) => {
     userId: currentUser.id,
     parentId: parentId ? parseInt(parentId, 10) : null
   }).returning()
-  if (!newComment) throw createError({ statusCode: 500, statusMessage: 'Impossible de créer le commentaire.' })
+  if (!newComment) throw createError({ statusCode: 500, message: 'Impossible de créer le commentaire.' })
 
   // Notification au propriétaire de la vidéo
   if (targetVideo.userId !== currentUser.id) {

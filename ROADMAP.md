@@ -12,38 +12,38 @@
 
 ### 1. Rendre `JWT_SECRET` obligatoire
 
-- [ ] Retirer le secret de secours codé en dur dans `server/utils/auth.ts`.
-- [ ] Valider au démarrage que `JWT_SECRET` est présent et suffisamment robuste.
-- [ ] Déclarer le secret dans `runtimeConfig`, sans l’exposer au client.
-- [ ] Documenter sa génération dans `.env.example`.
+- [x] Retirer le secret de secours codé en dur dans `server/utils/auth.ts`.
+- [x] Valider au démarrage que `JWT_SECRET` est présent et suffisamment robuste.
+- [x] Déclarer le secret dans `runtimeConfig`, sans l’exposer au client.
+- [x] Documenter sa génération dans `.env.example`.
 
 Risque : une production sans variable d’environnement utilise aujourd’hui une clé JWT connue, ce qui permettrait de forger des sessions.
 
 ### 2. Migrer les sessions vers des cookies HttpOnly
 
-- [ ] Ne plus stocker `auth_token` ni les données utilisateur dans `localStorage`.
-- [ ] Créer et effacer le cookie de session uniquement depuis les endpoints serveur.
-- [ ] Configurer le cookie avec `HttpOnly`, `Secure` en production et `SameSite=Lax` ou `Strict`.
-- [ ] Prévoir une protection CSRF adaptée si les cookies deviennent le seul mécanisme d’authentification.
+- [x] Ne plus stocker `auth_token` ni les données utilisateur dans `localStorage`.
+- [x] Créer et effacer le cookie de session uniquement depuis les endpoints serveur.
+- [x] Configurer le cookie avec `HttpOnly`, `Secure` en production et `SameSite=Lax` ou `Strict`.
+- [x] Prévoir une protection CSRF adaptée si les cookies deviennent le seul mécanisme d’authentification.
 
 Risque : le token actuel est lisible depuis JavaScript ; une XSS suffit à voler une session.
 
 ### 3. Durcir entièrement les uploads
 
-- [ ] Définir une taille maximale côté serveur avant de lire le fichier.
-- [ ] Accepter une liste fermée de types vidéo et image.
-- [ ] Vérifier le type réel du fichier (signature/MIME), pas seulement son extension.
-- [ ] Remplacer les écritures synchrones par des I/O asynchrones ou du streaming.
-- [ ] Valider les champs avant d’écrire le fichier et supprimer le fichier si la transaction échoue.
+- [x] Définir une taille maximale côté serveur avant de lire le fichier.
+- [x] Accepter une liste fermée de types vidéo et image.
+- [x] Vérifier le type réel du fichier (signature/MIME), pas seulement son extension.
+- [x] Remplacer les écritures synchrones par des I/O asynchrones ou du streaming.
+- [x] Valider les champs avant d’écrire le fichier et supprimer le fichier si la transaction échoue.
 - [ ] Préparer un stockage objet pour la production (S3, R2, etc.).
 
 Fichiers concernés : `server/api/videos/upload.post.ts`, `server/api/videos/[id].put.ts`.
 
 ### 4. Ajouter du rate limiting
 
-- [ ] Limiter par IP les routes register, login et vérification/ré-envoi d’e-mail.
-- [ ] Limiter par utilisateur les commentaires, likes, abonnements et notifications.
-- [ ] Journaliser les dépassements et retourner des réponses `429` cohérentes.
+- [x] Limiter par IP les routes register, login et vérification/ré-envoi d’e-mail.
+- [x] Limiter par utilisateur les commentaires, likes, abonnements et notifications.
+- [x] Journaliser les dépassements et retourner des réponses `429` cohérentes.
 
 ## P1 — SSR, performance et comportement Nuxt
 

@@ -5,7 +5,7 @@ import type { Notification, NotificationsResponse } from '#shared/types/models'
 
 export function useNotifications() {
   const router = useRouter()
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const notifications = useState<Notification[]>('global_notifications', () => [])
   const unreadCount = useState<number>('global_unread_notifications_count', () => 0)
@@ -14,15 +14,13 @@ export function useNotifications() {
   let pollInterval: ReturnType<typeof setInterval> | undefined
 
   const fetchNotifications = async () => {
-    if (!token.value) {
+    if (!isAuthenticated.value) {
       notifications.value = []
       unreadCount.value = 0
       return
     }
     try {
-      const data = await $fetch<NotificationsResponse>('/api/notifications', {
-        headers: { 'Authorization': `Bearer ${token.value}` }
-      })
+      const data = await $fetch<NotificationsResponse>('/api/notifications')
       notifications.value = data.notifications
       unreadCount.value = data.unreadCount
     } catch (err) {
@@ -31,12 +29,9 @@ export function useNotifications() {
   }
 
   const markNotifsRead = async () => {
-    if (!token.value) return
+    if (!isAuthenticated.value) return
     try {
-      await $fetch('/api/notifications/read-all', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token.value}` }
-      })
+      await $fetch('/api/notifications/read-all', { method: 'POST' })
       notifications.value.forEach((notification) => (notification.read = true))
       unreadCount.value = 0
     } catch (err) {
@@ -45,13 +40,10 @@ export function useNotifications() {
   }
 
   const handleNotifClick = async (notification: Notification) => {
-    if (!token.value) return
+    if (!isAuthenticated.value) return
     try {
       if (!notification.read) {
-        await $fetch('/api/notifications/read-all', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token.value}` }
-        })
+        await $fetch('/api/notifications/read-all', { method: 'POST' })
         notification.read = true
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }

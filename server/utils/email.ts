@@ -18,7 +18,7 @@ const getEmailConfig = () => {
     }
     throw createError({
       statusCode: 503,
-      statusMessage: 'La vérification par e-mail n’est pas configurée sur ce serveur.'
+      message: 'La vérification par e-mail n’est pas configurée sur ce serveur.'
     })
   }
 

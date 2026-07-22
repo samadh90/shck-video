@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   if (!videoCheck.length) {
     throw createError({
       statusCode: 404,
-      statusMessage: 'Vidéo introuvable.'
+      message: 'Vidéo introuvable.'
     })
   }
 
