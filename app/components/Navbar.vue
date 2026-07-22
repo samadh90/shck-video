@@ -92,12 +92,12 @@
         </NuxtLink>
 
         <!-- Actions -->
-        <NuxtLink to="/upload" class="neon-btn">Upload</NuxtLink>
-        <button @click="logout" class="neon-btn neon-btn-pink">Déconnexion</button>
+        <NuxtLink to="/upload" class="inline-flex cursor-pointer items-center justify-center rounded-lg border-2 border-[#8a2be2] bg-transparent px-5 py-2.5 text-sm font-semibold text-[#8a2be2] no-underline shadow-[0_0_4px_rgba(138,43,226,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] ease-[ease] [transform:translateZ(0)] [backface-visibility:hidden] [will-change:background-color,box-shadow,color] hover:bg-[#8a2be2] hover:text-white hover:shadow-[0_4px_12px_rgba(138,43,226,0.3)]">Upload</NuxtLink>
+        <button @click="logout" class="inline-flex cursor-pointer items-center justify-center rounded-lg border-2 border-[#ff1493] bg-transparent px-5 py-2.5 text-sm font-semibold text-[#ff1493] shadow-[0_0_4px_rgba(255,20,147,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] ease-[ease] [transform:translateZ(0)] [backface-visibility:hidden] [will-change:background-color,box-shadow,color] hover:bg-[#ff1493] hover:text-white hover:shadow-[0_4px_12px_rgba(255,20,147,0.3)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-[0.55]">Déconnexion</button>
       </template>
 
       <template v-else>
-        <NuxtLink to="/login" class="neon-btn neon-btn-pink">Connexion</NuxtLink>
+        <NuxtLink to="/login" class="inline-flex cursor-pointer items-center justify-center rounded-lg border-2 border-[#ff1493] bg-transparent px-5 py-2.5 text-sm font-semibold text-[#ff1493] no-underline shadow-[0_0_4px_rgba(255,20,147,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] ease-[ease] [transform:translateZ(0)] [backface-visibility:hidden] [will-change:background-color,box-shadow,color] hover:bg-[#ff1493] hover:text-white hover:shadow-[0_4px_12px_rgba(255,20,147,0.3)]">Connexion</NuxtLink>
       </template>
     </div>
   </nav>

@@ -1,7 +1,7 @@
 <template>
-  <div style="min-height: 100vh; background-color: #fcfcfc;">
+  <div class="min-h-screen bg-[#fcfcfc]">
     <!-- Main Content Container -->
-    <div style="max-width: 1280px; margin: 0 auto; padding: 25px 20px;">
+    <div class="mx-auto max-w-7xl px-5 py-6">
       
       <div v-if="pending" style="text-align: center; color: var(--neon-purple); padding: 60px;">
         <h2>Chargement de la vidéo...</h2>
@@ -13,30 +13,30 @@
       </div>
 
       <!-- 2 Columns Layout -->
-      <div v-else-if="video" class="video-page-layout">
+      <div v-else-if="video" class="flex items-start gap-7.5 max-lg:flex-col">
         
         <!-- LEFT COLUMN -->
-        <div class="main-content">
+        <div class="min-w-0 flex-1">
           <!-- Video Player -->
-          <div class="player-wrapper">
+          <div class="w-full overflow-hidden rounded-xl bg-black shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
             <video 
               ref="videoPlayerRef"
               controls 
               preload="none"
               :poster="video.thumbnail ? `/uploads/thumbnails/${video.thumbnail}` : undefined"
-              class="video-player"
+              class="block max-h-[580px] w-full"
             >
               <source :src="`/uploads/videos/${video.filename}`" type="video/mp4" />
             </video>
           </div>
 
           <!-- Video Meta Header -->
-          <div class="video-meta">
-            <h1 class="video-title">{{ video.title }}</h1>
+          <div class="mt-[18px] border-b border-line pb-5">
+            <h1 class="mb-2.5 text-[22px] leading-[1.3] font-bold text-[#111]">{{ video.title }}</h1>
             
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
-              <div class="meta-sub">
-                <span class="category-badge">{{ video.category || 'Divertissement' }}</span>
+              <div class="flex items-center gap-3">
+                <span class="rounded-[20px] bg-[rgba(138,43,226,0.1)] px-2.5 py-1 text-xs font-semibold uppercase text-[#8a2be2]">{{ video.category || 'Divertissement' }}</span>
                 <span class="meta-date">Publié le {{ formatDate(video.createdAt) }}</span>
                 <span style="color: #666; font-size: 13px;">👁 {{ video.views }} vues</span>
                 <span v-if="video.visibility !== 'PUBLIC'" style="background: #fef3c7; color: #d97706; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">
@@ -52,10 +52,10 @@
             </div>
 
             <!-- Uploader Profile Bar -->
-            <div class="uploader-bar">
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-[15px] rounded-xl bg-[#f8f9fa] px-[18px] py-[14px]">
               <div style="display: flex; align-items: center; gap: 14px;">
                 <NuxtLink :to="`/user/${video.userId}`" style="display: flex; align-items: center; gap: 14px; text-decoration: none;">
-                  <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username}`" loading="lazy" decoding="async" class="uploader-avatar" />
+                  <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username}`" loading="lazy" decoding="async" class="size-11 rounded-full border-2 border-[#8a2be2] object-cover" />
                   <div>
                     <h4 style="margin: 0; font-size: 16px; color: #111;">{{ video.user?.username }}</h4>
                     <!-- Confidentialité : Le nombre d'abonnés est visible uniquement par le propriétaire -->
@@ -102,22 +102,22 @@
             </div>
 
             <!-- Description -->
-            <div class="description-box" style="margin-top: 18px;">
+            <div class="rounded-lg border border-[#e9ecef] bg-white p-4 text-sm leading-6 text-[#333]" style="margin-top: 18px;">
               <p>{{ video.description || "Aucune description." }}</p>
             </div>
           </div>
 
           <!-- Comments Section -->
-          <div class="comments-section">
-            <h3 class="comments-header">Commentaires ({{ totalCommentsCount }})</h3>
+          <div class="mt-[30px]">
+            <h3 class="mb-5 text-lg font-bold text-[#111]">Commentaires ({{ totalCommentsCount }})</h3>
 
             <!-- Top Level Comment Input -->
-            <div v-if="token" class="comment-input-block">
+            <div v-if="token" class="mb-[25px]">
               <textarea 
                 v-model="newComment" 
                 placeholder="Ajoutez un commentaire public..." 
                 rows="2"
-                class="comment-textarea"
+                class="min-h-[70px] w-full text-sm"
                 @keydown.ctrl.enter="postComment(null)"
               ></textarea>
               <div style="text-align: right; margin-top: 8px;">
@@ -131,27 +131,27 @@
               </div>
             </div>
 
-            <div v-else class="comment-login-prompt">
+            <div v-else class="mb-[25px] rounded-lg border border-[rgba(255,20,147,0.2)] bg-[#fff5f8] p-[18px] text-center [&>p]:mb-3 [&>p]:mt-0 [&>p]:text-sm [&>p]:text-[#444]">
               <p>Vous devez avoir un compte et être connecté pour poster un commentaire.</p>
               <NuxtLink to="/login" class="neon-btn">Se connecter à SHCK Video</NuxtLink>
             </div>
 
             <!-- Comments List (Progressive Batch Rendering) -->
-            <div class="comments-list">
+            <div class="flex flex-col gap-4">
               <div v-for="c in visibleComments" :key="c.id" class="comment-block">
                 
                 <!-- Main Comment Card -->
-                <div class="comment-card">
+                <div class="flex gap-[14px] rounded-lg border border-[#f1f5f9] bg-white p-[14px]">
                   <NuxtLink :to="`/user/${c.user?.id}`" style="text-decoration: none;">
-                    <img :src="c.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${c.user?.username}`" loading="lazy" decoding="async" class="comment-avatar-img" />
+                    <img :src="c.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${c.user?.username}`" loading="lazy" decoding="async" class="size-[38px] shrink-0 rounded-full object-cover" />
                   </NuxtLink>
-                  <div class="comment-body">
+                  <div class="flex-1">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                      <div class="comment-author">
+                      <div class="mb-1 text-sm font-semibold text-[#222]">
                         <NuxtLink :to="`/user/${c.user?.id}`" style="color: inherit; text-decoration: none;">
                           {{ c.user?.username || 'Utilisateur' }}
                         </NuxtLink>
-                        <span class="comment-time">{{ formatDate(c.createdAt) }}</span>
+                        <span class="ml-2 text-xs font-normal text-[#888]">{{ formatDate(c.createdAt) }}</span>
                         <span v-if="c.isEdited" style="color: var(--neon-pink); font-size: 11px; margin-left: 6px; font-weight: bold;">(modifié)</span>
                       </div>
 
@@ -169,7 +169,7 @@
                       </div>
                     </div>
 
-                    <p v-else class="comment-text">{{ c.content }}</p>
+                    <p v-else class="m-0 text-sm leading-[1.4] text-[#333]">{{ c.content }}</p>
 
                     <div v-if="token" style="margin-top: 8px;">
                       <button @click="toggleReplyForm(c.id)" style="background: none; border: none; color: #666; font-size: 12px; cursor: pointer; font-weight: 600;">
@@ -188,19 +188,19 @@
                 </div>
 
                 <!-- NESTED REPLIES -->
-                <div v-if="c.replies && c.replies.length > 0" class="replies-wrapper" style="margin-left: 45px; margin-top: 10px; border-left: 2px solid #e2e8f0; padding-left: 15px; display: flex; flex-direction: column; gap: 10px;">
-                  <div v-for="reply in c.replies" :key="reply.id" class="comment-card" style="background: #fafafa;">
+                <div v-if="c.replies && c.replies.length > 0" class="mt-2.5 ml-[45px] flex flex-col gap-2.5 border-l-2 border-[#e2e8f0] pl-[15px]" style="margin-left: 45px; margin-top: 10px; border-left: 2px solid #e2e8f0; padding-left: 15px; display: flex; flex-direction: column; gap: 10px;">
+                  <div v-for="reply in c.replies" :key="reply.id" class="flex gap-[14px] rounded-lg border border-[#f1f5f9] bg-white p-[14px]" style="background: #fafafa;">
                     <NuxtLink :to="`/user/${reply.user?.id}`" style="text-decoration: none;">
-                      <img :src="reply.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${reply.user?.username}`" loading="lazy" decoding="async" class="comment-avatar-img" style="width: 30px; height: 30px;" />
+                      <img :src="reply.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${reply.user?.username}`" loading="lazy" decoding="async" class="size-[38px] shrink-0 rounded-full object-cover" style="width: 30px; height: 30px;" />
                     </NuxtLink>
 
-                    <div class="comment-body">
+                    <div class="flex-1">
                       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div class="comment-author">
+                        <div class="mb-1 text-sm font-semibold text-[#222]">
                           <NuxtLink :to="`/user/${reply.user?.id}`" style="color: inherit; text-decoration: none;">
                             {{ reply.user?.username || 'Utilisateur' }}
                           </NuxtLink>
-                          <span class="comment-time">{{ formatDate(reply.createdAt) }}</span>
+                          <span class="ml-2 text-xs font-normal text-[#888]">{{ formatDate(reply.createdAt) }}</span>
                           <span v-if="reply.isEdited" style="color: var(--neon-pink); font-size: 10px; margin-left: 4px; font-weight: bold;">(modifié)</span>
                         </div>
 
@@ -218,7 +218,7 @@
                         </div>
                       </div>
 
-                      <p v-else class="comment-text" style="font-size: 13px;">{{ reply.content }}</p>
+                      <p v-else class="m-0 text-sm leading-[1.4] text-[#333]" style="font-size: 13px;">{{ reply.content }}</p>
                     </div>
                   </div>
                 </div>
@@ -244,17 +244,17 @@
         </div>
 
         <!-- RIGHT COLUMN (Recommended Videos) -->
-        <div class="sidebar-recommendations">
+        <div class="w-[340px] shrink-0 rounded-xl border border-[#e2e8f0] bg-white p-5 max-[992px]:w-full">
           <h3 class="sidebar-title">Vidéos suggérées</h3>
 
-          <div class="recommended-list">
+          <div class="flex flex-col gap-[14px]">
             <NuxtLink 
               v-for="rec in recommendedVideos" 
               :key="rec.id" 
               :to="`/video/${rec.customId || rec.id}`"
-              class="rec-card"
+              class="flex gap-3 rounded-lg p-1.5 no-underline transition-[background] duration-200 hover:bg-[#f8f9fa]"
             >
-              <div class="rec-thumb">
+              <div class="flex h-[65px] w-[110px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-[linear-gradient(135deg,#1e1e24_0%,#2a2a36_100%)]">
                 <img 
                   v-if="rec.thumbnail" 
                   :src="`/uploads/thumbnails/${rec.thumbnail}`" 
@@ -264,10 +264,10 @@
                 />
                 <span v-else class="rec-play-icon">▶</span>
               </div>
-              <div class="rec-info">
-                <h4 class="rec-title">{{ rec.title }}</h4>
+              <div class="min-w-0 flex-1">
+                <h4 class="mb-1 mt-0 line-clamp-2 text-[13px] leading-[1.3] font-semibold text-[#222]">{{ rec.title }}</h4>
                 <span class="rec-cat">{{ rec.category || 'Général' }}</span>
-                <span class="rec-date">{{ formatDate(rec.createdAt) }}</span>
+                <span class="text-[11px] text-[#888]">{{ formatDate(rec.createdAt) }}</span>
               </div>
             </NuxtLink>
 
@@ -549,275 +549,3 @@ const formatDate = (dateStr: string) => {
   })
 }
 </script>
-
-<style scoped>
-.video-page-layout {
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
-
-@media (max-width: 992px) {
-  .video-page-layout {
-    flex-direction: column;
-  }
-}
-
-.main-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.sidebar-recommendations {
-  width: 340px;
-  flex-shrink: 0;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--border-color);
-}
-
-@media (max-width: 992px) {
-  .sidebar-recommendations {
-    width: 100%;
-  }
-}
-
-.player-wrapper {
-  width: 100%;
-  background: #000000;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.video-player {
-  width: 100%;
-  max-height: 580px;
-  display: block;
-}
-
-.video-meta {
-  margin-top: 18px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.video-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  color: #111111;
-  line-height: 1.3;
-}
-
-.meta-sub {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.category-badge {
-  background: rgba(138, 43, 226, 0.1);
-  color: var(--neon-purple);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.meta-date {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.uploader-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  background: #f8f9fa;
-  padding: 14px 18px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.uploader-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--neon-purple);
-}
-
-.description-box {
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-}
-
-.comments-section {
-  margin-top: 30px;
-}
-
-.comments-header {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #111;
-}
-
-.comment-input-block {
-  margin-bottom: 25px;
-}
-
-.comment-textarea {
-  width: 100%;
-  min-height: 70px;
-  font-size: 14px;
-}
-
-.comment-login-prompt {
-  background: #fff5f8;
-  border: 1px solid rgba(255, 20, 147, 0.2);
-  padding: 18px;
-  border-radius: 8px;
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.comment-login-prompt p {
-  margin: 0 0 12px 0;
-  color: #444;
-  font-size: 14px;
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.comment-card {
-  display: flex;
-  gap: 14px;
-  background: #ffffff;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #f1f5f9;
-}
-
-.comment-avatar-img {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.comment-body {
-  flex: 1;
-}
-
-.comment-author {
-  font-weight: 600;
-  font-size: 14px;
-  color: #222;
-  margin-bottom: 4px;
-}
-
-.comment-time {
-  font-weight: 400;
-  font-size: 12px;
-  color: #888;
-  margin-left: 8px;
-}
-
-.comment-text {
-  margin: 0;
-  font-size: 14px;
-  color: #333;
-  line-height: 1.4;
-}
-
-.sidebar-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-  color: #111;
-}
-
-.recommended-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.rec-card {
-  display: flex;
-  gap: 12px;
-  text-decoration: none;
-  border-radius: 8px;
-  padding: 6px;
-  transition: background 0.2s;
-}
-
-.rec-card:hover {
-  background: #f8f9fa;
-}
-
-.rec-thumb {
-  width: 110px;
-  height: 65px;
-  background: linear-gradient(135deg, #1e1e24 0%, #2a2a36 100%);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.rec-play-icon {
-  color: #ffffff;
-  font-size: 18px;
-  opacity: 0.8;
-}
-
-.rec-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.rec-title {
-  margin: 0 0 4px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #222;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.rec-cat {
-  display: block;
-  font-size: 11px;
-  color: var(--neon-purple);
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.rec-date {
-  font-size: 11px;
-  color: #888;
-}
-</style>

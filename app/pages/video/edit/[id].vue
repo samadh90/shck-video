@@ -1,56 +1,56 @@
 <template>
-  <div style="min-height: 100vh; background: #fcfcfc;">
-    <div v-if="loading" style="text-align: center; color: var(--neon-purple); padding: 60px;">
+  <div class="min-h-screen bg-[#fcfcfc]">
+    <div v-if="loading" class="p-[60px] text-center text-(--neon-purple)">
       <h2>Chargement de l'éditeur vidéo...</h2>
     </div>
 
-    <div v-else-if="errorMsg" style="text-align: center; padding: 60px;">
-      <h2 style="color: var(--neon-pink);">{{ errorMsg }}</h2>
-      <NuxtLink to="/dashboard/videos" class="neon-btn" style="margin-top: 15px; display: inline-block;">Retour au gestionnaire</NuxtLink>
+    <div v-else-if="errorMsg" class="p-[60px] text-center">
+      <h2 class="text-(--neon-pink)">{{ errorMsg }}</h2>
+      <NuxtLink to="/dashboard/videos" class="mt-[15px] inline-flex items-center justify-center rounded-md border border-(--neon-purple) px-4 py-2 text-(--neon-purple) no-underline shadow-[0_0_4px_rgba(138,43,226,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-(--neon-purple) hover:text-white hover:shadow-[0_4px_12px_rgba(138,43,226,0.3)]">Retour au gestionnaire</NuxtLink>
     </div>
 
     <!-- Layout 2 Colonnes : Formulaire d'Édition & Showcase Live -->
-    <div v-else style="max-width: 1280px; margin: 30px auto; padding: 0 20px;">
+    <div v-else class="mx-auto my-[30px] max-w-[1280px] px-5">
       
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div class="mb-[25px] flex items-center justify-between">
         <div>
-          <h1 style="color: var(--neon-purple); margin: 0 0 6px 0; font-size: 26px;">Éditeur de Vidéo</h1>
-          <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Modifiez les métadonnées ou remplacez le média. Visualisez le rendu en temps réel à droite.</p>
+          <h1 class="mb-[6px] text-[26px] text-(--neon-purple)">Éditeur de Vidéo</h1>
+          <p class="m-0 text-sm text-(--text-muted)">Modifiez les métadonnées ou remplacez le média. Visualisez le rendu en temps réel à droite.</p>
         </div>
-        <NuxtLink to="/dashboard/videos" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">&larr; Retour au gestionnaire</NuxtLink>
+        <NuxtLink to="/dashboard/videos" class="text-sm text-(--text-muted) no-underline">&larr; Retour au gestionnaire</NuxtLink>
       </div>
 
       <!-- Post-Save Success Banner avec Bouton direct "Voir la vidéo publiée" -->
-      <div v-if="saveSuccess" style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 12px; padding: 18px 24px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 24px;">✅</span>
+      <div v-if="saveSuccess" class="mb-[25px] flex items-center justify-between gap-[15px] rounded-xl border border-[#10b981] bg-[#ecfdf5] px-6 py-[18px]">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">✅</span>
           <div>
-            <h4 style="margin: 0; color: #065f46; font-size: 16px;">Modifications enregistrées avec succès !</h4>
-            <span style="font-size: 13px; color: #047857;">Vos modifications ont été publiées. Vous pouvez maintenant consulter le rendu final.</span>
+            <h4 class="m-0 text-base text-[#065f46]">Modifications enregistrées avec succès !</h4>
+            <span class="text-[13px] text-[#047857]">Vos modifications ont été publiées. Vous pouvez maintenant consulter le rendu final.</span>
           </div>
         </div>
 
-        <NuxtLink :to="`/video/${videoId}`" class="neon-btn" style="background: #10b981; color: white; border-color: #10b981; font-weight: bold; text-decoration: none; padding: 10px 20px;">
+        <NuxtLink :to="`/video/${videoId}`" class="inline-flex items-center justify-center rounded-md border border-[#10b981] bg-[#10b981] px-5 py-2.5 font-bold text-white no-underline shadow-[0_0_4px_rgba(16,185,129,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-[#10b981] hover:text-white hover:shadow-[0_4px_12px_rgba(16,185,129,0.3)]">
           👁 Voir la vidéo publiée
         </NuxtLink>
       </div>
 
-      <div class="edit-grid-layout">
+      <div class="grid items-start gap-[30px] min-[993px]:grid-cols-[1.1fr_0.9fr]">
         
         <!-- COLONNE GAUCHE : FORMULAIRE D'ÉDITION -->
-        <div style="background: #ffffff; border-radius: 16px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+        <div class="rounded-2xl border border-[#e2e8f0] bg-white p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
           
-          <form @submit.prevent="saveVideo" style="display: flex; flex-direction: column; gap: 18px;">
+          <form @submit.prevent="saveVideo" class="flex flex-col gap-[18px]">
             
             <div>
-              <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">Titre de la vidéo *</label>
-              <input type="text" v-model="form.title" required style="width: 100%;" />
+              <label class="mb-[6px] block text-sm font-semibold text-[#333]">Titre de la vidéo *</label>
+              <input type="text" v-model="form.title" required class="w-full" />
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #333;">Catégorie *</label>
-                <select v-model="form.category" required style="width: 100%;">
+                <label class="mb-[6px] block text-[13px] font-semibold text-[#333]">Catégorie *</label>
+                <select v-model="form.category" required class="w-full">
                   <option value="Divertissement">Divertissement</option>
                   <option value="Gaming">Gaming</option>
                   <option value="Musique">Musique</option>
@@ -63,8 +63,8 @@
               </div>
 
               <div>
-                <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #333;">Visibilité *</label>
-                <select v-model="form.visibility" required style="width: 100%;">
+                <label class="mb-[6px] block text-[13px] font-semibold text-[#333]">Visibilité *</label>
+                <select v-model="form.visibility" required class="w-full">
                   <option value="PUBLIC">🌐 Publique</option>
                   <option value="UNLISTED">🔗 Non répertoriée</option>
                   <option value="PRIVATE">🔒 Privée</option>
@@ -73,54 +73,54 @@
             </div>
 
             <!-- Option Contenu +18 (Restreint) -->
-            <div style="display: flex; align-items: center; gap: 8px; background: #fff5f5; padding: 10px 14px; border-radius: 8px; border: 1px solid #fecaca;">
-              <input type="checkbox" id="editIs18PlusInput" v-model="form.is18Plus" style="width: 18px; height: 18px; cursor: pointer;" />
-              <label for="editIs18PlusInput" style="font-size: 13px; font-weight: 600; color: #dc2626; cursor: pointer;">
+            <div class="flex items-center gap-2 rounded-lg border border-[#fecaca] bg-[#fff5f5] px-3.5 py-2.5">
+              <input type="checkbox" id="editIs18PlusInput" v-model="form.is18Plus" class="size-[18px] cursor-pointer" />
+              <label for="editIs18PlusInput" class="cursor-pointer text-[13px] font-semibold text-[#dc2626]">
                 🔞 Contenu réservé au public averti (+18)
               </label>
             </div>
 
             <!-- Option de remplacement du Fichier Vidéo -->
-            <div style="background: #f8f9fa; border-radius: 10px; padding: 14px; border: 1px solid #e2e8f0;">
-              <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: #333;">
+            <div class="rounded-[10px] border border-[#e2e8f0] bg-[#f8f9fa] p-3.5">
+              <label class="mb-1 block text-[13px] font-semibold text-[#333]">
                 📹 Remplacer le fichier vidéo (Facultatif)
               </label>
-              <span style="display: block; font-size: 11px; color: #666; margin-bottom: 8px;">
+              <span class="mb-2 block text-[11px] text-[#666]">
                 Fichier actuel: {{ form.filename }}
               </span>
-              <input type="file" @change="handleNewVideoFile" accept="video/*" style="width: 100%;" />
+              <input type="file" @change="handleNewVideoFile" accept="video/*" class="w-full" />
             </div>
 
             <!-- Option de remplacement de la Miniature -->
-            <div style="background: #f8f9fa; border-radius: 10px; padding: 14px; border: 1px solid #e2e8f0;">
-              <label style="display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: #333;">
+            <div class="rounded-[10px] border border-[#e2e8f0] bg-[#f8f9fa] p-3.5">
+              <label class="mb-1 block text-[13px] font-semibold text-[#333]">
                 🖼 Remplacer la miniature / Thumbnail (Facultatif)
               </label>
-              <input type="file" @change="handleNewThumbFile" accept="image/*" style="width: 100%;" />
+              <input type="file" @change="handleNewThumbFile" accept="image/*" class="w-full" />
             </div>
 
             <div>
-              <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333;">Description</label>
-              <textarea v-model="form.description" rows="4" style="width: 100%; resize: vertical;"></textarea>
+              <label class="mb-[6px] block text-sm font-semibold text-[#333]">Description</label>
+              <textarea v-model="form.description" rows="4" class="w-full resize-y"></textarea>
             </div>
 
             <!-- Progression de sauvegarde -->
-            <div v-if="saving" style="margin-top: 5px;">
-              <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--neon-purple);">
+            <div v-if="saving" class="mt-[5px]">
+              <div class="mb-[6px] flex justify-between text-[13px] font-bold text-(--neon-purple)">
                 <span>Enregistrement des modifications...</span>
                 <span>{{ progress }}%</span>
               </div>
-              <div style="height: 10px; width: 100%; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
-                <div :style="{ width: `${progress}%` }" style="height: 100%; background: linear-gradient(90deg, var(--neon-purple) 0%, var(--neon-pink) 100%); transition: width 0.2s ease-out;"></div>
+              <div class="h-2.5 w-full overflow-hidden rounded-[5px] bg-[#e2e8f0]">
+                <div :style="{ width: `${progress}%` }" class="h-full bg-linear-to-r from-(--neon-purple) to-(--neon-pink) transition-[width] duration-200 ease-out"></div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 12px; margin-top: 10px;">
-              <button type="submit" class="neon-btn neon-btn-pink" :disabled="saving" style="flex: 1; padding: 12px; font-size: 15px;">
+            <div class="mt-2.5 flex gap-3">
+              <button type="submit" class="inline-flex flex-1 items-center justify-center rounded-md border border-(--neon-pink) p-3 text-[15px] text-(--neon-pink) shadow-[0_0_4px_rgba(255,20,147,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-(--neon-pink) hover:text-white hover:shadow-[0_4px_12px_rgba(255,20,147,0.3)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55" :disabled="saving">
                 {{ saving ? `Sauvegarde (${progress}%)...` : 'Enregistrer les modifications' }}
               </button>
               
-              <NuxtLink v-if="saveSuccess" :to="`/video/${videoId}`" class="neon-btn" style="text-decoration: none; padding: 12px 18px; font-size: 14px; font-weight: bold;">
+              <NuxtLink v-if="saveSuccess" :to="`/video/${videoId}`" class="inline-flex items-center justify-center rounded-md border border-(--neon-purple) px-[18px] py-3 text-sm font-bold text-(--neon-purple) no-underline shadow-[0_0_4px_rgba(138,43,226,0.2)] transition-[background-color,box-shadow,color] duration-[180ms] hover:bg-(--neon-purple) hover:text-white hover:shadow-[0_4px_12px_rgba(138,43,226,0.3)]">
                 👁 Voir la vidéo
               </NuxtLink>
             </div>
@@ -131,55 +131,55 @@
 
         <!-- COLONNE DROITE : SHOWCASE / APERÇU TEMPS RÉEL -->
         <div>
-          <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 90px;">
+          <div class="sticky top-[90px] rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
             
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-              <h3 style="margin: 0; font-size: 16px; color: #111; display: flex; align-items: center; gap: 6px;">
+            <div class="mb-[15px] flex items-center justify-between">
+              <h3 class="m-0 flex items-center gap-[6px] text-base text-[#111]">
                 <span>✨</span> Rendu Final (Aperçu)
               </h3>
-              <span style="font-size: 11px; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 10px; font-weight: bold;">
+              <span class="rounded-[10px] bg-[#fef3c7] px-2 py-0.5 text-[11px] font-bold text-[#d97706]">
                 Live Preview
               </span>
             </div>
 
             <!-- Live Video Player Showcase -->
-            <div style="margin-bottom: 15px; background: #000; border-radius: 10px; overflow: hidden; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+            <div class="mb-[15px] flex min-h-[200px] items-center justify-center overflow-hidden rounded-[10px] bg-black">
               <video 
                 :key="liveVideoUrl || form.filename"
                 :src="liveVideoUrl || `/uploads/videos/${form.filename}`" 
                 controls
                 preload="none"
-                style="width: 100%; max-height: 280px; display: block;"
+                class="block max-h-[280px] w-full"
               ></video>
             </div>
 
             <!-- Live Meta Showcase -->
             <div>
-              <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #111; line-height: 1.3; word-break: break-word;">
+              <h3 class="mb-2 text-lg leading-[1.3] break-words text-[#111]">
                 {{ form.title || 'Titre de la vidéo' }}
               </h3>
 
-              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; font-size: 12px;">
-                <span class="category-badge">{{ form.category }}</span>
-                <span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+              <div class="mb-3 flex flex-wrap items-center gap-2.5 text-xs">
+                <span class="rounded bg-[rgba(138,43,226,0.1)] px-2.5 py-1 text-[11px] font-semibold text-(--neon-purple)">{{ form.category }}</span>
+                <span class="rounded bg-[#f1f5f9] px-2 py-0.5 font-semibold text-[#475569]">
                   {{ form.visibility === 'PRIVATE' ? '🔒 Privée' : form.visibility === 'UNLISTED' ? '🔗 Non répertoriée' : '🌐 Publique' }}
                 </span>
-                <span style="color: #777;">👁 {{ viewsCount }} vues</span>
+                <span class="text-[#777]">👁 {{ viewsCount }} vues</span>
               </div>
 
               <!-- Thumbnail Showcase -->
-              <div v-if="liveThumbUrl || form.thumbnail" style="margin-top: 10px;">
-                <span style="font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 4px;">Miniature d'illustration :</span>
+              <div v-if="liveThumbUrl || form.thumbnail" class="mt-2.5">
+                <span class="mb-1 block text-[11px] font-bold text-[#555]">Miniature d'illustration :</span>
                 <img 
                   :src="liveThumbUrl || `/uploads/thumbnails/${form.thumbnail}`" 
                   loading="lazy"
                   decoding="async"
-                  style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--neon-purple);" 
+                  class="h-[120px] w-full rounded-lg border border-(--neon-purple) object-cover"
                 />
               </div>
 
-              <div class="description-box" style="margin-top: 12px; font-size: 13px; max-height: 100px; overflow-y: auto;">
-                <p style="margin: 0; color: #444;">{{ form.description || 'Aucune description rédigée.' }}</p>
+              <div class="mt-3 max-h-[100px] overflow-y-auto rounded-lg border border-[#e2e8f0] bg-white p-4 text-[13px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                <p class="m-0 text-[#444]">{{ form.description || 'Aucune description rédigée.' }}</p>
               </div>
             </div>
 
@@ -352,18 +352,3 @@ const saveVideo = async () => {
   xhr.send(formData)
 }
 </script>
-
-<style scoped>
-.edit-grid-layout {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 30px;
-  align-items: start;
-}
-
-@media (max-width: 992px) {
-  .edit-grid-layout {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <main style="max-width: 520px; margin: 80px auto; padding: 24px; text-align: center;">
+  <main class="mx-auto my-20 max-w-xl p-6 text-center">
     <h1>Vérification de l’adresse e-mail</h1>
     <p v-if="pending">Vérification du lien en cours…</p>
     <template v-else>

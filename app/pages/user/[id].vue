@@ -1,27 +1,27 @@
 <template>
-  <div style="min-height: 100vh; background: #fcfcfc;">
-    <div v-if="loading" style="text-align: center; color: var(--neon-purple); padding: 60px;">
+  <div class="min-h-screen bg-[#fcfcfc]">
+    <div v-if="loading" class="p-15 text-center text-brand">
       <h2>Chargement du profil...</h2>
     </div>
 
-    <div v-else-if="errorMsg" style="text-align: center; padding: 60px;">
-      <h2 style="color: var(--neon-pink);">{{ errorMsg }}</h2>
-      <NuxtLink to="/" class="neon-btn" style="margin-top: 15px; display: inline-block;">Retour à l'accueil</NuxtLink>
+    <div v-else-if="errorMsg" class="p-15 text-center">
+      <h2 class="text-accent">{{ errorMsg }}</h2>
+      <NuxtLink to="/" class="mt-4 inline-block rounded-md bg-brand px-4 py-2 font-semibold text-white no-underline">Retour à l'accueil</NuxtLink>
     </div>
 
-    <div v-else-if="channel" style="max-width: 1100px; margin: 30px auto; padding: 0 20px;">
+    <div v-else-if="channel" class="mx-auto my-8 max-w-6xl px-5">
       
       <!-- Profil Public Card -->
-      <div style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 35px;">
+      <div class="mb-9 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-line bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
         
-        <div style="display: flex; align-items: center; gap: 20px;">
-          <img :src="channel.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${channel.username}`" loading="lazy" decoding="async" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--neon-purple); object-fit: cover;" />
+        <div class="flex items-center gap-5">
+          <img :src="channel.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${channel.username}`" loading="lazy" decoding="async" class="size-[90px] rounded-full border-[3px] border-brand object-cover" />
           <div>
-            <h1 style="margin: 0 0 6px 0; font-size: 26px; color: #111;">{{ channel.username }}</h1>
-            <p style="margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; max-width: 500px;">
+            <h1 class="mb-1.5 text-[26px] text-[#111]">{{ channel.username }}</h1>
+            <p class="mb-2.5 max-w-[500px] text-sm text-muted">
               {{ channel.bio || "Aucune biographie disponible." }}
             </p>
-            <div style="font-size: 13px; color: #555; font-weight: 500;">
+            <div class="text-[13px] font-medium text-[#555]">
               <!-- Masquage strict du nombre d'abonnés sur profil public d'autrui -->
               <span v-if="isOwnChannel && followersCount !== null">👥 {{ followersCount }} abonnés • </span>
               <span>🎬 {{ channel.videos?.length || 0 }} vidéos publiques</span>
@@ -29,34 +29,34 @@
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 15px;">
+        <div class="flex flex-col items-end gap-4">
           <!-- Evaluation Profil par Etoiles -->
-          <div style="display: flex; align-items: center; gap: 6px; background: #f8f9fa; padding: 8px 14px; border-radius: 20px; border: 1px solid #e2e8f0;">
-            <span style="font-size: 13px; font-weight: 600; color: #444; margin-right: 4px;">Note du créateur:</span>
+          <div class="flex items-center gap-1.5 rounded-[20px] border border-line bg-surface px-3.5 py-2">
+            <span class="mr-1 text-[13px] font-semibold text-[#444]">Note du créateur:</span>
             <span 
               v-for="star in 5" 
               :key="star" 
               @click="rateChannel(star)" 
-              style="cursor: pointer; font-size: 20px; transition: transform 0.1s;"
+              class="cursor-pointer text-xl transition-transform duration-100"
               :style="{ color: star <= (userRating || Math.round(avgRating)) ? '#f59e0b' : '#cbd5e1' }"
             >
               ★
             </span>
-            <span style="font-size: 14px; font-weight: bold; margin-left: 6px; color: #111;">{{ avgRating }}</span>
-            <span style="font-size: 12px; color: #888;">({{ totalRatings }})</span>
+            <span class="ml-1.5 text-sm font-bold text-[#111]">{{ avgRating }}</span>
+            <span class="text-xs text-[#888]">({{ totalRatings }})</span>
           </div>
 
           <!-- Bouton S'abonner OU Modifier le profil si propre compte -->
           <button 
             v-if="!isOwnChannel" 
             @click="toggleFollow" 
-            :class="['neon-btn', isFollowing ? '' : 'neon-btn-pink']"
-            style="padding: 10px 24px; font-size: 14px;"
+            :class="isFollowing ? 'bg-brand' : 'bg-accent'"
+            class="rounded-md px-6 py-2.5 text-sm font-semibold text-white"
           >
             {{ isFollowing ? 'Abonné ✔' : 'S\'abonner' }}
           </button>
           
-          <NuxtLink v-else to="/settings" class="neon-btn neon-btn-pink" style="padding: 8px 18px; font-size: 13px; text-decoration: none;">
+          <NuxtLink v-else to="/settings" class="rounded-md bg-accent px-[18px] py-2 text-[13px] font-semibold text-white no-underline">
             ✏️ Modifier le profil
           </NuxtLink>
         </div>

@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 40px; text-align: center;">Redirection...</div>
+  <div class="p-10 text-center">Redirection...</div>
 </template>
 
 <script setup lang="ts">

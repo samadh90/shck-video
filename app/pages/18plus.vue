@@ -1,71 +1,71 @@
 <template>
-  <div class="theme-18plus-container" style="padding: 30px 20px;">
-    <div style="max-width: 1280px; margin: 0 auto;">
+  <div class="bg-[#121212] px-5 py-8 text-white">
+    <div class="mx-auto max-w-7xl">
       
       <!-- Banner Thématique +18 Crimson Dark -->
-      <div style="background: linear-gradient(135deg, #1e1e1e 0%, #2a0808 100%); border-radius: 16px; border: 1px solid #dc2626; padding: 25px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 8px 30px rgba(220, 38, 38, 0.15);">
+      <div class="mb-8 flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-red-600 bg-linear-to-br from-[#1e1e1e] to-[#2a0808] p-6 shadow-[0_8px_30px_rgba(220,38,38,0.15)]">
         <div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <h1 style="margin: 0; font-size: 26px; color: #ffffff;">SHCK<span style="color: #dc2626; font-weight: 900;">Video +18</span></h1>
-            <span style="background: #dc2626; color: white; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 12px; text-transform: uppercase;">
+          <div class="flex items-center gap-2.5">
+            <h1 class="m-0 text-[26px] text-white">SHCK<span class="font-black text-red-600">Video +18</span></h1>
+            <span class="rounded-xl bg-red-600 px-2.5 py-0.5 text-[11px] font-bold uppercase text-white">
               Catalogue Mature
             </span>
           </div>
-          <p style="margin: 6px 0 0 0; color: #a1a1aa; font-size: 14px;">
+          <p class="mt-1.5 text-sm text-zinc-400">
             Espace réservé aux utilisateurs majeurs (≥ 18 ans). Thème Crimson Dark actif.
           </p>
         </div>
 
-        <NuxtLink to="/" class="neon-btn neon-btn-crimson" style="text-decoration: none; padding: 10px 20px; font-size: 14px;">
+        <NuxtLink to="/" class="rounded-md bg-red-600 px-5 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-red-700">
           ⬅️ Retour à SHCK Video Classique
         </NuxtLink>
       </div>
 
       <!-- Grille des Vidéos Matures (+18) -->
       <div>
-        <div v-if="loading" style="color: #dc2626; text-align: center; padding: 50px; font-weight: bold;">
+        <div v-if="loading" class="p-12 text-center font-bold text-red-600">
           Chargement du catalogue réservé +18...
         </div>
 
-        <div v-else-if="videos.length === 0" style="text-align: center; padding: 60px; color: #a1a1aa; background: #1e1e1e; border-radius: 12px; border: 1px solid #333333;">
-          <span style="font-size: 36px; display: block; margin-bottom: 10px;">🔞</span>
+        <div v-else-if="videos.length === 0" class="rounded-xl border border-[#333] bg-[#1e1e1e] p-15 text-center text-zinc-400">
+          <span class="mb-2.5 block text-4xl">🔞</span>
           Aucune vidéo réservée aux adultes n'est disponible pour le moment.
         </div>
 
-        <div v-else class="video-grid" style="padding: 0;">
+        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-5 p-0">
           <div 
             v-for="video in videos" 
             :key="video.id"
-            class="video-card"
+            class="overflow-hidden rounded-xl border border-[#333] bg-[#1e1e1e] shadow-sm"
           >
-            <NuxtLink :to="`/video/${video.customId || video.id}`" style="text-decoration: none; display: block;">
-              <div class="thumbnail" style="background: linear-gradient(135deg, #2a0808 0%, #121212 100%);">
+            <NuxtLink :to="`/video/${video.customId || video.id}`" class="block no-underline">
+              <div class="flex aspect-video items-center justify-center overflow-hidden bg-linear-to-br from-[#2a0808] to-[#121212]">
                 <img 
                   v-if="video.thumbnail" 
                   :src="`/uploads/thumbnails/${video.thumbnail}`" 
                   loading="lazy"
                   decoding="async"
-                  style="width: 100%; height: 100%; object-fit: cover;"
+                  class="size-full object-cover"
                 />
-                <span v-else style="color: #dc2626; font-size: 32px;">🔞</span>
+                <span v-else class="text-3xl text-red-600">🔞</span>
               </div>
             </NuxtLink>
             
-            <div class="video-info">
+            <div class="p-4">
               <h3>
-                <NuxtLink :to="`/video/${video.customId || video.id}`" style="color: inherit; text-decoration: none;">{{ video.title }}</NuxtLink>
+                <NuxtLink :to="`/video/${video.customId || video.id}`" class="text-inherit no-underline">{{ video.title }}</NuxtLink>
               </h3>
               
               <NuxtLink 
                 :to="`/user/${video.userId}`" 
-                style="display: flex; align-items: center; gap: 8px; margin: 8px 0; text-decoration: none;"
+                class="my-2 flex items-center gap-2 no-underline"
               >
-                <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username || 'U'}`" loading="lazy" decoding="async" style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid #dc2626;" />
-                <span style="font-size: 13px; color: #d4d4d8; font-weight: 600;">{{ video.user?.username || 'Utilisateur' }}</span>
+                <img :src="video.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${video.user?.username || 'U'}`" loading="lazy" decoding="async" class="size-[22px] rounded-full border border-red-600" />
+                <span class="text-[13px] font-semibold text-zinc-300">{{ video.user?.username || 'Utilisateur' }}</span>
               </NuxtLink>
 
-              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #a1a1aa;">
-                <span style="color: #dc2626; font-weight: 700;">🔞 +18 • {{ video.category || 'Divertissement' }}</span>
+              <div class="flex items-center justify-between text-xs text-zinc-400">
+                <span class="font-bold text-red-600">🔞 +18 • {{ video.category || 'Divertissement' }}</span>
                 <span>👁 {{ video.views || 0 }} vues</span>
               </div>
             </div>

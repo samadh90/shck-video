@@ -1,5 +1,5 @@
 <template>
-  <div style="min-height: 100vh; background-color: #fcfcfc;">
+  <div class="min-h-screen bg-[#fcfcfc]">
     <!-- En-tête Global Persistant avec Cloche de Notifications -->
     <Navbar />
     

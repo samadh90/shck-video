@@ -1,48 +1,48 @@
 <template>
-  <div style="max-width: 1000px; margin: 30px auto; padding: 0 20px;">
+  <div class="mx-auto my-8 max-w-5xl px-5">
     
-    <div style="margin-bottom: 25px;">
-      <h1 style="font-size: 24px; color: #111; margin: 0 0 6px 0;">
-        Résultats pour "<span style="color: var(--neon-purple);">{{ activeQuery }}</span>"
+    <div class="mb-6">
+      <h1 class="mb-1.5 text-2xl text-[#111]">
+        Résultats pour "<span class="text-brand">{{ activeQuery }}</span>"
       </h1>
-      <p style="margin: 0; color: var(--text-muted); font-size: 14px;">
+      <p class="m-0 text-sm text-muted">
         {{ totalResults }} résultat(s) trouvé(s)
       </p>
     </div>
 
-    <div v-if="loading" style="text-align: center; color: var(--neon-purple); padding: 50px;">
+    <div v-if="loading" class="p-12 text-center text-brand">
       <h2>Recherche en cours...</h2>
     </div>
 
-    <div v-else-if="totalResults === 0" style="background: white; border-radius: 12px; padding: 60px; text-align: center; border: 1px solid #e2e8f0;">
+    <div v-else-if="totalResults === 0" class="rounded-xl border border-line bg-white p-15 text-center">
       <h3>Aucun résultat trouvé</h3>
-      <p style="color: var(--text-muted);">Essayez de rechercher d'autres mots-clés ou le nom d'un créateur.</p>
-      <NuxtLink to="/" class="neon-btn" style="margin-top: 15px; display: inline-block;">Retour à l'accueil</NuxtLink>
+      <p class="text-muted">Essayez de rechercher d'autres mots-clés ou le nom d'un créateur.</p>
+      <NuxtLink to="/" class="mt-4 inline-block rounded-md bg-brand px-4 py-2 font-semibold text-white no-underline">Retour à l'accueil</NuxtLink>
     </div>
 
-    <div v-else style="display: flex; flex-direction: column; gap: 30px;">
+    <div v-else class="flex flex-col gap-8">
       
       <!-- SECTION 1 : CHAÎNES & CRÉATEURS -->
       <div v-if="channels.length > 0">
-        <h2 style="font-size: 18px; color: #111; margin: 0 0 15px 0; border-bottom: 2px solid var(--neon-purple); padding-bottom: 8px; display: inline-block;">
+        <h2 class="mb-4 inline-block border-b-2 border-brand pb-2 text-lg text-[#111]">
           👤 Chaînes & Créateurs ({{ channels.length }})
         </h2>
 
-        <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="flex flex-col gap-3">
           <div 
             v-for="ch in channels" 
             :key="ch.id" 
-            style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);"
+            class="flex items-center justify-between gap-5 rounded-xl border border-line bg-white p-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
           >
-            <div style="display: flex; align-items: center; gap: 16px;">
-              <img :src="ch.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${ch.username}`" loading="lazy" decoding="async" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--neon-purple);" />
+            <div class="flex items-center gap-4">
+              <img :src="ch.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${ch.username}`" loading="lazy" decoding="async" class="size-[55px] rounded-full border-2 border-brand object-cover" />
               <div>
-                <h3 style="margin: 0 0 4px 0; font-size: 17px; color: #111;">{{ ch.username }}</h3>
-                <p style="margin: 0; color: #666; font-size: 13px; max-width: 500px;">{{ ch.bio || 'Aucune biographie.' }}</p>
+                <h3 class="mb-1 text-[17px] text-[#111]">{{ ch.username }}</h3>
+                <p class="m-0 max-w-[500px] text-[13px] text-muted">{{ ch.bio || 'Aucune biographie.' }}</p>
               </div>
             </div>
 
-            <NuxtLink :to="`/user/${ch.id}`" class="neon-btn" style="text-decoration: none; padding: 8px 18px; font-size: 13px; flex-shrink: 0;">
+            <NuxtLink :to="`/user/${ch.id}`" class="shrink-0 rounded-md bg-brand px-[18px] py-2 text-[13px] font-semibold text-white no-underline">
               Voir la chaîne
             </NuxtLink>
           </div>
@@ -51,39 +51,39 @@
 
       <!-- SECTION 2 : VIDÉOS -->
       <div v-if="videos.length > 0">
-        <h2 style="font-size: 18px; color: #111; margin: 0 0 15px 0; border-bottom: 2px solid var(--neon-pink); padding-bottom: 8px; display: inline-block;">
+        <h2 class="mb-4 inline-block border-b-2 border-accent pb-2 text-lg text-[#111]">
           🎬 Vidéos ({{ videos.length }})
         </h2>
 
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="flex flex-col gap-4">
           <div 
             v-for="v in videos" 
             :key="v.id" 
-            style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px; display: flex; gap: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); align-items: center;"
+            class="flex items-center gap-5 rounded-xl border border-line bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
           >
-            <NuxtLink :to="`/video/${v.customId || v.id}`" style="flex-shrink: 0; text-decoration: none;">
-              <div style="width: 160px; height: 95px; background: #1e1e24; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: white;">
-                <img v-if="v.thumbnail" :src="`/uploads/thumbnails/${v.thumbnail}`" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover;" />
-                <span v-else style="font-size: 24px;">▶</span>
+            <NuxtLink :to="`/video/${v.customId || v.id}`" class="shrink-0 no-underline">
+              <div class="flex h-[95px] w-40 items-center justify-center overflow-hidden rounded-lg bg-[#1e1e24] text-white">
+                <img v-if="v.thumbnail" :src="`/uploads/thumbnails/${v.thumbnail}`" loading="lazy" decoding="async" class="size-full object-cover" />
+                <span v-else class="text-2xl">▶</span>
               </div>
             </NuxtLink>
 
-            <div style="flex: 1; min-width: 0;">
-              <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #111;">
-                <NuxtLink :to="`/video/${v.customId || v.id}`" style="color: inherit; text-decoration: none;">{{ v.title }}</NuxtLink>
+            <div class="min-w-0 flex-1">
+              <h3 class="mb-1.5 text-[17px] text-[#111]">
+                <NuxtLink :to="`/video/${v.customId || v.id}`" class="text-inherit no-underline">{{ v.title }}</NuxtLink>
               </h3>
 
-              <NuxtLink :to="`/user/${v.userId}`" style="display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 8px;">
-                <img :src="v.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${v.user?.username}`" loading="lazy" decoding="async" style="width: 22px; height: 22px; border-radius: 50%;" />
-                <span style="font-size: 13px; color: #444; font-weight: 600;">{{ v.user?.username }}</span>
+              <NuxtLink :to="`/user/${v.userId}`" class="mb-2 flex items-center gap-2 no-underline">
+                <img :src="v.user?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${v.user?.username}`" loading="lazy" decoding="async" class="size-[22px] rounded-full" />
+                <span class="text-[13px] font-semibold text-[#444]">{{ v.user?.username }}</span>
               </NuxtLink>
 
-              <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+              <p class="mb-2 line-clamp-2 text-[13px] leading-[1.3] text-muted">
                 {{ v.description || 'Aucune description.' }}
               </p>
 
-              <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-muted);">
-                <span style="color: var(--neon-purple); font-weight: 600;">{{ v.category || 'Divertissement' }}</span>
+              <div class="flex items-center gap-3 text-xs text-muted">
+                <span class="font-semibold text-brand">{{ v.category || 'Divertissement' }}</span>
                 <span>👁 {{ v.views }} vues</span>
                 <span>👍 {{ v.likesCount }} | 👎 {{ v.dislikesCount }}</span>
               </div>

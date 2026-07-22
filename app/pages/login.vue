@@ -1,18 +1,18 @@
 <template>
-  <div style="padding: 30px; text-align: center;">
-    <h2 style="color: var(--neon-purple);">Connexion</h2>
-    <form @submit.prevent="login" style="max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;">
-      <input type="email" placeholder="Email" required v-model="email" style="padding: 10px; border-radius: 5px; border: 1px solid var(--neon-purple); background: white; color: black;" />
-      <input type="password" placeholder="Mot de passe" required v-model="password" style="padding: 10px; border-radius: 5px; border: 1px solid var(--neon-purple); background: white; color: black;" />
-      <button type="submit" class="neon-btn" :disabled="loading">
+  <div class="p-8 text-center">
+    <h2 class="text-brand">Connexion</h2>
+    <form @submit.prevent="login" class="mx-auto flex max-w-sm flex-col gap-4">
+      <input type="email" placeholder="Email" required v-model="email" class="rounded-md border border-brand bg-white p-2.5 text-black" />
+      <input type="password" placeholder="Mot de passe" required v-model="password" class="rounded-md border border-brand bg-white p-2.5 text-black" />
+      <button type="submit" class="rounded-md bg-brand px-4 py-2 font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60" :disabled="loading">
         {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
     </form>
-    <p v-if="errorMsg" style="color: red; margin-top: 15px;">{{ errorMsg }}</p>
-    <p style="margin-top: 20px;">
-      Pas encore de compte ? <NuxtLink to="/register" style="color: var(--neon-pink);">S'inscrire</NuxtLink>
+    <p v-if="errorMsg" class="mt-4 text-red-600">{{ errorMsg }}</p>
+    <p class="mt-5">
+      Pas encore de compte ? <NuxtLink to="/register" class="text-accent">S'inscrire</NuxtLink>
     </p>
-    <p style="margin-top: 10px;"><NuxtLink to="/" style="color: var(--text-muted);">Retour à l'accueil</NuxtLink></p>
+    <p class="mt-2.5"><NuxtLink to="/" class="text-muted">Retour à l'accueil</NuxtLink></p>
   </div>
 </template>
 
